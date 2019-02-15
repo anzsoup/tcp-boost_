@@ -2,6 +2,11 @@
 #define __SESSION_H__
 
 #include <boost/asio.hpp>
+#include <boost/lockfree/queue.hpp>
+#include <mutex>
+#include <queue>
+#include "packet.h"
+#include "peer.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -34,30 +39,28 @@ namespace medianet
                 closed
             };
 
-            const short SYS_CLOSE_REQ = -1;
-            const short SYS_CLOSE_ACK = -2;
-
         public:
             session(tcp::socket *socket);
-            //peer get_peer() const;
+            ~session();
             tcp::socket* get_socket() const;
+            char* get_buffer() const;
             state get_state() const;
-            // void set_peer(const peer *p);
-            // void set_socket(const tcp::socket *socket);
+            peer* get_peer();
+            void set_peer(peer *pr);
             void on_connected();
+            void on_receive(size_t bytes_transferred);
+            void on_message(packet *msg);
+            void on_closed();
+            void close();
+            void send(char *data);
 
         private:
-            /** 
-             * A flag used to prevent redundant close operation
-             * 0 = connected,
-             * 1 = disconnected
-             */
-            int m_isclosed;
-
-            //message_resolver m_resolver;
-            //peer *m_peer;
             tcp::socket *m_socket;
             state m_state;
+            char *m_buffer;
+            peer *m_peer;
+            std::mutex m_mtx_send;
+            std::queue<char*> m_sending_queue;
     };
 }
 

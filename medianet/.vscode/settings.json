@@ -54,7 +54,8 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "string": "cpp"
     },
     "terminal.integrated.shell.windows": "cmd.exe"
 }

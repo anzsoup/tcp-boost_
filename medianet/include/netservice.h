@@ -44,8 +44,8 @@ namespace medianet
 
         private:
             void on_new_client(tcp::socket *cl_socket);
-            //void begin_receive(session *s);
-            void process_receive(const boost::system::error_code& error, size_t bytes_transferred);
+            void begin_receive(session *sess);
+            void process_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred);
     
         private:
             // io_service is noncopyable

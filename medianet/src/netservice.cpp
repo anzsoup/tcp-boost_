@@ -63,6 +63,35 @@ namespace medianet
     {
         std::cout << "Client connection accepted." << std::endl;
         auto cl_session = new session(cl_socket);
-        //begin_receive(cl_session);
+        begin_receive(cl_session);
+    }
+
+    void
+    netservice::begin_receive(session *sess)
+    {
+        char *buf = sess->get_buffer();
+        tcp::socket *socket = sess->get_socket();
+        socket->async_read_some(buffer(buf, packet::BUFFER_SIZE), 
+            boost::bind(&netservice::process_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
+    }
+
+    void
+    netservice::process_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred)
+    {
+        if (bytes_transferred > 0 && !error)
+        {
+            sess->on_receive(bytes_transferred);
+            // Continue to receive.
+            begin_receive(sess);
+        }
+        else
+        {
+            // It means that connection has been lost from remote peer.
+            if (bytes_transferred == 0)
+            {
+                std::cout << "Connection lost from remote peer." << std::endl;
+                sess->close();
+            }
+        }
     }
 } // medianet
