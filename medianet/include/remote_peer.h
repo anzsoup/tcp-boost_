@@ -2,10 +2,11 @@
 #define __REMOTE_PEER_H__
 
 #include "packet.h"
-#include "session.h"
 
 namespace medianet
 {
+    class session;
+    
     class remote_peer
     {
         public:

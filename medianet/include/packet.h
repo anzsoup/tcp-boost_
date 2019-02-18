@@ -2,7 +2,6 @@
 #define __PACKET_H__
 
 #include <string>
-#include "session.h"
 
 namespace medianet
 {
@@ -20,7 +19,7 @@ namespace medianet
             
         public:
             packet();
-            packet(char *buffer, session *owner);
+            packet(char *buffer);
             packet(const packet &orig);
             ~packet();
 
@@ -30,7 +29,6 @@ namespace medianet
             void record_size();
 
             // Getters and Setters
-            session* get_owner() const;
             char* get_buffer() const;
             int get_position() const;
             int get_size() const;
@@ -79,7 +77,6 @@ namespace medianet
             int m_position;
             int m_size;
             int16_t m_protocol_id;
-            session *m_owner;
     };
 }
 

@@ -60,7 +60,7 @@ namespace medianet
     session::on_receive(size_t bytes_transferred)
     {
         // Assuming that stream is never segmented and arrives at one piece.
-        auto msg = new packet(m_buffer, this);
+        auto msg = new packet(m_buffer);
         on_message(msg);
     }
 
@@ -172,4 +172,4 @@ namespace medianet
         }
         m_mtx_send.unlock();
     }
-} // medianet
+}

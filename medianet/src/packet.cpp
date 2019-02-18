@@ -13,17 +13,15 @@ namespace medianet
     }
 
     packet::packet()
-        : m_owner(nullptr),
-          m_position(HEADER_SIZE),
+        : m_position(HEADER_SIZE),
           m_size(0),
           m_protocol_id(0)
     {
         m_buffer = new char[BUFFER_SIZE]();
     }
 
-    packet::packet(char *buffer, session *owner)
-        : m_owner(owner),
-          m_position(0)
+    packet::packet(char *buffer)
+        : m_position(0)
     {
         char *temp = read_buffer(new char[HEADER_SIZE], HEADER_SIZE);
         m_size = *((int*)temp);
@@ -35,8 +33,7 @@ namespace medianet
     }
 
     packet::packet(const packet &orig)
-        : m_owner(orig.get_owner()),
-          m_position(orig.get_position()),
+        : m_position(orig.get_position()),
           m_size(orig.get_size()),
           m_protocol_id(orig.get_protocol_id())
     {
@@ -54,12 +51,6 @@ namespace medianet
         int16_t body_size = (int16_t)(m_position - HEADER_SIZE);
         char *header = (char*)&body_size;
         std::memcpy(m_buffer, header, HEADER_SIZE);
-    }
-
-    session*
-    packet::get_owner() const
-    {
-        return m_owner;
     }
 
     char*

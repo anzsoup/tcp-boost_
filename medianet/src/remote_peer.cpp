@@ -1,4 +1,5 @@
 #include "remote_peer.h"
+#include "session.h"
 
 namespace medianet
 {

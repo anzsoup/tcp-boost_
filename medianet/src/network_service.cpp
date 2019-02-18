@@ -80,7 +80,7 @@ namespace medianet
     void
     network_service::on_connected(tcp::socket *sv_socket)
     {
-        auto sv_session = new session(sv_socket);
+        auto sv_session = new session(m_ios, sv_socket);
         m_on_connected(sv_session);
         begin_receive(sv_session);
     }
@@ -88,7 +88,7 @@ namespace medianet
     void
     network_service::on_client_connected(tcp::socket *cl_socket)
     {
-        auto cl_session = new session(cl_socket);
+        auto cl_session = new session(m_ios, cl_socket);
         m_on_client_connected(cl_session);
         begin_receive(cl_session);
     }
