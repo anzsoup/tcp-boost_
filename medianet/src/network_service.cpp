@@ -8,7 +8,8 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     network_service::network_service(bool use_logicthread)
-        : m_listener(nullptr)
+        : m_listener(nullptr),
+          m_connector(nullptr)
     {
         m_ios = new io_service();
 
@@ -21,6 +22,9 @@ namespace medianet
 
     network_service::~network_service()
     {
+        if (m_connector)
+            delete m_connector;
+            
         end_listen();
 
         // if (m_logic_entry)
@@ -30,14 +34,28 @@ namespace medianet
         // }
     }
 
+    void
+    network_service::connect(std::string host, short port, CBK_SESSION_HANDLER on_connected)
+    {
+        if (!m_connector)
+            m_connector = new connector(m_ios);
+
+        m_on_connected = on_connected;
+
+        m_connector->connect(host, port,
+            boost::bind(&network_service::on_connected, this, _1));
+    }
+
     unsigned short
-    network_service::start_listen(unsigned short port, int backlog)
+    network_service::start_listen(unsigned short port, int backlog, CBK_SESSION_HANDLER on_client_connected)
     {
         if (!m_listener)
             m_listener = new client_listener(m_ios);
+
+        m_on_client_connected = on_client_connected;
         
         unsigned short assigned_port = m_listener->start(port, backlog, 
-            boost::bind(&network_service::on_new_client, this, _1));
+            boost::bind(&network_service::on_client_connected, this, _1));
         return assigned_port;
     }
 
@@ -49,6 +67,7 @@ namespace medianet
             m_listener->stop();
             delete m_listener;
             m_listener = nullptr;
+            m_on_client_connected.clear();
         } 
     }
 
@@ -59,10 +78,18 @@ namespace medianet
     }
 
     void
-    network_service::on_new_client(tcp::socket *cl_socket)
+    network_service::on_connected(tcp::socket *sv_socket)
     {
-        std::cout << "Client connection accepted." << std::endl;
+        auto sv_session = new session(sv_socket);
+        m_on_connected(sv_session);
+        begin_receive(sv_session);
+    }
+
+    void
+    network_service::on_client_connected(tcp::socket *cl_socket)
+    {
         auto cl_session = new session(cl_socket);
+        m_on_client_connected(cl_session);
         begin_receive(cl_session);
     }
 
@@ -71,12 +98,15 @@ namespace medianet
     {
         char *buf = sess->get_buffer();
         tcp::socket *socket = sess->get_socket();
-        socket->async_read_some(buffer(buf, packet::BUFFER_SIZE), 
-            boost::bind(&network_service::process_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
+        // socket::async_read_some(or socket::async_receive) may not receive all of the requested number of bytes.
+        // I use async_read() instead to guarantee that packets are always received in one piece.
+        async_read(*socket, buffer(buf, packet::BUFFER_SIZE),
+            boost::bind(&network_service::handle_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
+        m_ios->run();
     }
 
     void
-    network_service::process_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred)
+    network_service::handle_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred)
     {
         if (bytes_transferred > 0 && !error)
         {

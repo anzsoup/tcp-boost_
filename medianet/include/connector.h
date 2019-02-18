@@ -3,7 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <string>
-#include "network_service.h"
+#include "callbacks.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -11,7 +11,7 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     /**
-     * A class for connecting operation.
+     * A class hiding connecting operation.
      * @author leejm
      * @date 2019-02-13
      * @version 0.1
@@ -19,21 +19,16 @@ namespace medianet
     class connector
     {
         public:
-            connector(network_service &net);
-
-            /**
-             * Start a connection asynchronously.
-             * @param host Host IP or domain.
-             * @param port Port number.
-             */
-            void connect(std::string host, short port);
+            connector(io_service *ios);
+            void connect(std::string host, short port, CBK_CONNECTION_HANDLER on_connected);
 
         private:
-            void handle_connect(const boost::system::error_code &error);
+            virtual void handle_connect(const boost::system::error_code &error);
 
         private:
-            network_service m_net;
+            io_service *m_ios;
             tcp::socket *m_sv_socket;
+            CBK_CONNECTION_HANDLER m_on_connected;
     };
 }
 

@@ -257,7 +257,7 @@ namespace medianet
         else if (m_position + length > BUFFER_SIZE)
         {
             std::cout << "Packet reading failed : " << "Tryed reading buffer over the BUFFER_SIZE." << std::endl;
-            return;
+            return nullptr;
         }
 
         std::memcpy(dest, m_buffer + m_position, length);

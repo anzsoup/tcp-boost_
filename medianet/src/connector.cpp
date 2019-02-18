@@ -7,19 +7,19 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    connector::connector(network_service &net)
-        : m_net(net)
+    connector::connector(io_service *ios)
+        : m_ios(ios)
     {
     }
 
     void
-    connector::connect(std::string host, short port)
+    connector::connect(std::string host, short port, CBK_CONNECTION_HANDLER on_connected)
     {
+        m_on_connected = on_connected;
         tcp::endpoint ep(address::from_string(host), port);
-        auto ios = m_net.get_io_service();
-        m_sv_socket = new tcp::socket(*ios);
+        m_sv_socket = new tcp::socket(*m_ios);
         m_sv_socket->async_connect(ep, boost::bind(&connector::handle_connect, this, placeholders::error));
-        ios->run();
+        m_ios->run();
     }
 
     void
@@ -28,9 +28,8 @@ namespace medianet
         // if error == success
         if (!error)
         {
-            std::cout << "Connection success" << std::endl;
-            //auto sv_session = new session(m_sv_socket);
-            //m_service.on_connection_completed(sv_session);
+            std::cout << "Connection succeed" << std::endl;
+            m_on_connected(m_sv_socket);
         }
         else
         {

@@ -1,6 +1,6 @@
-#include "client_listener.h"
 #include <iostream>
 #include <boost/bind.hpp>
+#include "client_listener.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -20,13 +20,15 @@ namespace medianet
     }
 
     unsigned short
-    client_listener::start(unsigned short port, int backlog, CBK_ACCEPT_HANDLER accept_handler)
+    client_listener::start(unsigned short port, int backlog, CBK_CONNECTION_HANDLER on_client_connected)
     {
         if (m_acceptor)
         {
             std::cerr << "Client listening already in progress." << std::endl;
             return port;
         }
+
+        m_on_client_connected = on_client_connected;
         
         tcp::endpoint endpoint(tcp::v4(), port);
 
@@ -45,8 +47,6 @@ namespace medianet
             m_acceptor->listen();
         }
         
-        
-        m_accept_handler = accept_handler;
         unsigned short assigned_port = m_acceptor->local_endpoint().port();
         std::cout << "Begin client listening. Port : " << assigned_port << std::endl;
 
@@ -68,11 +68,12 @@ namespace medianet
     {
         if (!error)
         {
-            m_accept_handler(cl_socket);
+            std::cout << "Client connection accepted." << std::endl;
+            m_on_client_connected(cl_socket);
         }
         else
         {
-            std::cerr << "An error occurs while accepting new client : " << error.message() << std::endl;
+            std::cout << "An error occurs while accepting new client : " << error.message() << std::endl;
         }
         
         begin_accept();
@@ -88,7 +89,6 @@ namespace medianet
 
             delete m_acceptor;
             m_acceptor = nullptr;
-            m_accept_handler.clear();
 
             std::cout << "End client listening." << std::endl;
         }
