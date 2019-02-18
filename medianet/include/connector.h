@@ -3,7 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <string>
-#include "netservice.h"
+#include "network_service.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -19,7 +19,7 @@ namespace medianet
     class connector
     {
         public:
-            connector(netservice &net);
+            connector(network_service &net);
 
             /**
              * Start a connection asynchronously.
@@ -32,7 +32,7 @@ namespace medianet
             void handle_connect(const boost::system::error_code &error);
 
         private:
-            netservice m_net;
+            network_service m_net;
             tcp::socket *m_sv_socket;
     };
 }

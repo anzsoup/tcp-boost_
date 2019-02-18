@@ -1,13 +1,13 @@
 #include <boost/bind.hpp>
 #include <iostream>
-#include "netservice.h"
+#include "network_service.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
 namespace medianet
 {
-    netservice::netservice(bool use_logicthread)
+    network_service::network_service(bool use_logicthread)
         : m_listener(nullptr)
     {
         m_ios = new io_service();
@@ -19,7 +19,7 @@ namespace medianet
         // }
     }
 
-    netservice::~netservice()
+    network_service::~network_service()
     {
         end_listen();
 
@@ -31,18 +31,18 @@ namespace medianet
     }
 
     unsigned short
-    netservice::start_listen(unsigned short port, int backlog)
+    network_service::start_listen(unsigned short port, int backlog)
     {
         if (!m_listener)
             m_listener = new client_listener(m_ios);
         
         unsigned short assigned_port = m_listener->start(port, backlog, 
-            boost::bind(&netservice::on_new_client, this, _1));
+            boost::bind(&network_service::on_new_client, this, _1));
         return assigned_port;
     }
 
     void
-    netservice::end_listen()
+    network_service::end_listen()
     {
         if (m_listener)
         {
@@ -53,13 +53,13 @@ namespace medianet
     }
 
     io_service*
-    netservice::get_io_service() const
+    network_service::get_io_service() const
     {
         return m_ios;
     }
 
     void
-    netservice::on_new_client(tcp::socket *cl_socket)
+    network_service::on_new_client(tcp::socket *cl_socket)
     {
         std::cout << "Client connection accepted." << std::endl;
         auto cl_session = new session(cl_socket);
@@ -67,16 +67,16 @@ namespace medianet
     }
 
     void
-    netservice::begin_receive(session *sess)
+    network_service::begin_receive(session *sess)
     {
         char *buf = sess->get_buffer();
         tcp::socket *socket = sess->get_socket();
         socket->async_read_some(buffer(buf, packet::BUFFER_SIZE), 
-            boost::bind(&netservice::process_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
+            boost::bind(&network_service::process_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
     }
 
     void
-    netservice::process_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred)
+    network_service::process_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred)
     {
         if (bytes_transferred > 0 && !error)
         {

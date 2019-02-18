@@ -7,7 +7,7 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    connector::connector(netservice &net)
+    connector::connector(network_service &net)
         : m_net(net)
     {
     }

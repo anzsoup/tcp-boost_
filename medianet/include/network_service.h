@@ -1,5 +1,5 @@
-#ifndef __NETSERVICE_H__
-#define __NETSERVICE_H__
+#ifndef __NETWORK_SERVICE_H__
+#define __NETWORK_SERVICE_H__
 
 #include <boost/asio.hpp>
 #include <string>
@@ -12,7 +12,7 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    class netservice
+    class network_service
     {
         public:
             /**
@@ -25,9 +25,9 @@ namespace medianet
              *   -> Don't create any logic thread.
              *   -> Messages are processed by each IO threads.
              */ 
-            netservice(bool use_logicthread = false);
+            network_service(bool use_logicthread = false);
 
-            ~netservice();
+            ~network_service();
 
             io_service* get_io_service() const;
 
