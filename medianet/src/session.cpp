@@ -13,10 +13,16 @@ namespace medianet
           m_peer(nullptr),
           m_socket(socket),
           m_state(state::idle),
-          m_mtx_send(),
-          m_sending_queue()
+          m_mtx_sending(),
+          m_cv_sending(),
+          m_sending_queue(),
+          m_is_sending_stopped(false)
     {
         m_buffer = new char[packet::BUFFER_SIZE]();
+
+        // Start sending thread
+        m_sending_thread = boost::thread(boost::bind(&session::sending_job, this));
+        m_sending_thread.join();
     }
 
     session::~session()
@@ -83,7 +89,7 @@ namespace medianet
         if (m_state == state::closed)
             return;
 
-        if (m_sending_queue.size() > 0)
+        if (!m_sending_queue.empty())
         {
             m_state = state::reserve_closing;
         }
@@ -97,6 +103,9 @@ namespace medianet
     void
     session::on_closed()
     {
+        // Stop sending thread loop
+        m_is_sending_stopped = true;
+
         if (m_socket)
         {
             m_socket->close();
@@ -113,63 +122,45 @@ namespace medianet
     void
     session::send(packet *msg)
     {
-        m_mtx_send.lock();
-        {
-            msg->record_size();
-            m_sending_queue.push(msg);
-
-            if (m_sending_queue.size() > 1)
-            {
-                // If something remains in queue, then previous sending has not been completed.
-                // begin_send() will be called after current sending operation is done.
-                return;
-            }
-
-            begin_send();
-        }
-        m_mtx_send.unlock();
+        msg->record_size();
+        if (!m_sending_queue.push(msg))
+            std::cout << "Failed to enqueue packet to sending queue." << std::endl;
+        // awake sending queue
+        m_cv_sending.notify_all();
     }
 
     void
-    session::begin_send()
+    session::sending_job()
     {
-        auto *msg = m_sending_queue.front();
-        
-        async_write(*m_socket, buffer(msg->get_buffer(), msg->get_size()),
-            boost::bind(&session::handle_send, this, msg, placeholders::error));
-        m_ios->run();
-    }
-
-    void
-    session::handle_send(packet *msg, const boost::system::error_code& error)
-    {
-        m_mtx_send.lock();
+        while (true)
         {
-            if (error)
+            m_cv_sending.wait(m_mtx_sending);
+            while (!m_sending_queue.empty())
             {
-                std::cout << "Failed to send packet. : " << error.message() << std::endl;
-            }
-            
-            // remove spent packet
-            auto *msg = m_sending_queue.front();
-            m_sending_queue.pop();
-            // todo : you want packet pooling?
-            delete msg;
-
-            if (m_sending_queue.empty())
-            {
-                // Now we have sent all packets. Close the session if reserved.
-                if (m_state == state::reserve_closing)
+                packet *msg;
+                if (m_sending_queue.pop(msg))
                 {
-                    on_closed();
+                    boost::system::error_code error;
+
+                    // non-blocking synchronous send
+                    // It's going to continue writing until all of the data has been transferred.
+                    boost::asio::write(*m_socket, buffer(msg->get_buffer(), msg->get_size()), error);
+                    // todo : you want pooling?
+                    delete msg;
+
+                    if (error)
+                    {
+                        std::cout << "Failed to send packet. : " << error.message() << std::endl;
+                    }
+                }
+                else
+                {
+                    std::cout << "Failed to dequeue packet from sending queue." << std::endl;
                 }
             }
-            else
-            {
-                begin_send();
-                return;
-            }
+
+            if (m_is_sending_stopped)
+                break;
         }
-        m_mtx_send.unlock();
     }
 }

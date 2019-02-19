@@ -2,8 +2,8 @@
 #define __SESSION_H__
 
 #include <boost/asio.hpp>
-#include <mutex>
-#include <queue>
+#include <boost/thread.hpp>
+#include <boost/lockfree/queue.hpp>
 #include "packet.h"
 #include "remote_peer.h"
 
@@ -59,8 +59,7 @@ namespace medianet
 
         private:
             void on_closed();
-            void begin_send();
-            void handle_send(packet *msg, const boost::system::error_code& error);
+            void sending_job();
 
         private:
             io_service *m_ios;
@@ -68,8 +67,11 @@ namespace medianet
             state m_state;
             char *m_buffer;
             remote_peer *m_peer;
-            std::mutex m_mtx_send;
-            std::queue<packet*> m_sending_queue;
+            boost::thread m_sending_thread;
+            boost::condition_variable_any m_cv_sending;
+            boost::mutex m_mtx_sending;
+            boost::lockfree::queue<packet*> m_sending_queue;
+            bool m_is_sending_stopped;
     };
 }
 

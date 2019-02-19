@@ -28,8 +28,8 @@ namespace medianet
         // deep copy
         m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], buffer, m_size);
         m_protocol_id = pop_protocol_id();
-        // return to initial position
-        m_position = HEADER_SIZE;
+        // HEADER - PROTOCOL_ID - DATA1 - DATA2 - ...
+        // We are here! --------^
     }
 
     packet::packet(const packet &orig)

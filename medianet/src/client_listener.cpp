@@ -60,7 +60,7 @@ namespace medianet
         auto cl_socket = new tcp::socket(*m_ios);
         m_acceptor->async_accept(*cl_socket, 
             boost::bind(&client_listener::handle_accept, this, cl_socket, placeholders::error));
-        m_ios->run();
+        m_ios->poll();
     }
 
     void

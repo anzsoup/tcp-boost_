@@ -102,7 +102,7 @@ namespace medianet
         // I use async_read() instead to guarantee that packets are always received in one piece.
         async_read(*socket, buffer(buf, packet::BUFFER_SIZE),
             boost::bind(&network_service::handle_receive, this, sess, placeholders::error, placeholders::bytes_transferred));
-        m_ios->run();
+        m_ios->poll();
     }
 
     void

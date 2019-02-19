@@ -19,7 +19,7 @@ namespace medianet
         tcp::endpoint ep(address::from_string(host), port);
         m_sv_socket = new tcp::socket(*m_ios);
         m_sv_socket->async_connect(ep, boost::bind(&connector::handle_connect, this, placeholders::error));
-        m_ios->run();
+        m_ios->poll();
     }
 
     void

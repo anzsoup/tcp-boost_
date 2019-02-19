@@ -1,5 +1,6 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 #include "medianet.h"
 
 using namespace std;
@@ -7,17 +8,29 @@ using namespace medianet;
 
 #define PORT 0
 
+void on_connected(session *sess);
+void on_client_connected(session *sess);
+
 void run_server()
 {
-    netservice net;
-    net.start_listen(PORT, 10);
+    network_service net;
+    net.start_listen(PORT, 10, on_client_connected);
 }
 
 void run_client(short port)
 {
-    netservice net;
-    connector con(net);
-    con.connect("127.0.0.1", port);
+    network_service net;
+    net.connect("127.0.0.1", port, on_connected);
+}
+
+void on_connected(session *sess)
+{
+
+}
+
+void on_client_connected(session *sess)
+{
+
 }
 
 int main(int argc, char **argv)
