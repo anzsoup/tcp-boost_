@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
+#include <vector>
 #include "medianet.h"
 
 using namespace std;
@@ -11,26 +12,43 @@ using namespace medianet;
 void on_connected(session *sess);
 void on_client_connected(session *sess);
 
+network_service *net;
+session *sv;
+vector<session*> *vec_cl;
+
 void run_server()
 {
-    auto *net = new network_service();
+    net = new network_service();
+    vec_cl = new vector<session*>();
     net->start_listen(PORT, 10, on_client_connected);
+
+    cin.get();
+
+    for (auto sess : *vec_cl)
+        sess->close();
+    std::cout << "Server test over." << std::endl;
 }
 
 void run_client(short port)
 {
-    auto *net = new network_service();
+    net = new network_service();
     net->connect("127.0.0.1", port, on_connected);
+
+    cin.get();
+
+    sv->close();
+    std::cout << "Client test over." << std::endl;
 }
 
 void on_connected(session *sess)
 {
-
+    sv = sess;
 }
 
 void on_client_connected(session *sess)
 {
-
+    vec_cl->push_back(sess);
+    std::cout << "Current : " << vec_cl->size() << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -50,6 +68,4 @@ int main(int argc, char **argv)
         }
         run_client(port);
     }
-
-    cin.get();
 }
