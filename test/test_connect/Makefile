@@ -7,7 +7,7 @@ SRC		:= ../../medianet/src
 INCLUDE	:= ../../medianet/include
 LIB		:= ../../medianet/lib
 
-LIBRARIES	:=
+LIBRARIES	:= -lboost_system -lboost_thread
 EXECUTABLE	:= medianet_test
 
 
@@ -18,7 +18,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp ./main.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES) -lboost_system
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
 clean:
 	-rm $(BIN)/*

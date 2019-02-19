@@ -13,14 +13,14 @@ void on_client_connected(session *sess);
 
 void run_server()
 {
-    network_service net;
-    net.start_listen(PORT, 10, on_client_connected);
+    auto *net = new network_service();
+    net->start_listen(PORT, 10, on_client_connected);
 }
 
 void run_client(short port)
 {
-    network_service net;
-    net.connect("127.0.0.1", port, on_connected);
+    auto *net = new network_service();
+    net->connect("127.0.0.1", port, on_connected);
 }
 
 void on_connected(session *sess)
