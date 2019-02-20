@@ -3,30 +3,29 @@
 #include <boost/bind.hpp>
 #include <vector>
 #include "medianet.h"
+#include "session_cl.h"
 
 using namespace std;
 using namespace medianet;
+using namespace boost::asio;
+using namespace boost::asio::ip;
 
 #define PORT 0
 
-void on_connected(session *sess);
-void on_client_connected(session *sess);
+void on_connected(tcp::socket *sv_socket);
+void on_client_connected(tcp::socket *cl_socket);
 
 network_service *net;
 session *sv;
-vector<session*> *vec_cl;
 
 void run_server()
 {
     net = new network_service();
-    vec_cl = new vector<session*>();
     net->start_listen(PORT, 10, on_client_connected);
 
     cin.get();
 
-    for (auto sess : *vec_cl)
-        sess->close();
-    std::cout << "Server test over." << std::endl;
+    std::cout << "Server test over.\n";
 }
 
 void run_client(short port)
@@ -37,24 +36,22 @@ void run_client(short port)
     cin.get();
 
     sv->close();
-    std::cout << "Client test over." << std::endl;
+    std::cout << "Client test over.\n";
 }
 
-void on_connected(session *sess)
+void on_connected(tcp::socket *sv_socket)
 {
-    sv = sess;
+    sv = new session(net->get_io_service(), sv_socket);
 }
 
-void on_client_connected(session *sess)
+void on_client_connected(tcp::socket *cl_socket)
 {
-    vec_cl->push_back(sess);
-    std::cout << "Current : " << vec_cl->size() << std::endl;
+    auto sess = new session_cl(net->get_io_service(), cl_socket);
 }
 
 int main(int argc, char **argv)
 {
     string option(argv[1]);
-
     if (option == "-s")
     {
         run_server();
