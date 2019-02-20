@@ -35,18 +35,17 @@ void run_client(short port)
 
     cin.get();
 
-    sv->close();
     std::cout << "Client test over.\n";
 }
 
 void on_connected(tcp::socket *sv_socket)
 {
-    sv = new session(net->get_io_service(), sv_socket);
+    new session(net->get_io_service(), sv_socket);
 }
 
 void on_client_connected(tcp::socket *cl_socket)
 {
-    auto sess = new session_cl(net->get_io_service(), cl_socket);
+    new session_cl(net->get_io_service(), cl_socket);
 }
 
 int main(int argc, char **argv)
