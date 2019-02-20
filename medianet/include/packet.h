@@ -35,7 +35,6 @@ namespace medianet
             int16_t get_protocol_id() const;
 
             // Pop methods
-            int16_t pop_protocol_id();
             char pop_byte();
             bool pop_bool();
             int16_t pop_int16();

@@ -5,7 +5,6 @@
 #include <boost/thread.hpp>
 #include <boost/lockfree/queue.hpp>
 #include "packet.h"
-#include "remote_peer.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -38,17 +37,19 @@ namespace medianet
                 closed
             };
 
+            static const int SENDING_QUEUE_SIZE = 20000;
+
+        public:
+            virtual void on_message(packet *msg);
+            virtual void on_disconnected();
+
         public:
             session(io_service *ios, tcp::socket *socket);
             ~session();
             tcp::socket* get_socket() const;
             char* get_buffer() const;
             state get_state() const;
-            remote_peer* get_peer();
-            void set_peer(remote_peer *pr);
-            void on_connected();
-            void on_receive(size_t bytes_transferred);
-            void on_message(packet *msg);
+            void handle_message();
             void close();
 
             /**
@@ -58,20 +59,24 @@ namespace medianet
             void send(packet *msg);
 
         private:
-            void on_closed();
-            void sending_job();
+            void sending_job(bool &started);
+            void receiving_job(bool &started);
+            void begin_receive();
+            void handle_receive(const boost::system::error_code &error, size_t bytes_transferred);
 
         private:
             io_service *m_ios;
             tcp::socket *m_socket;
             state m_state;
             char *m_buffer;
-            remote_peer *m_peer;
             boost::thread m_sending_thread;
+            boost::thread m_receiving_thread;
             boost::condition_variable_any m_cv_sending;
             boost::mutex m_mtx_sending;
-            boost::lockfree::queue<packet*> m_sending_queue;
+            bool m_flag_sending;
+            boost::lockfree::queue<packet*, boost::lockfree::capacity<SENDING_QUEUE_SIZE>> m_sending_queue;
             bool m_is_sending_stopped;
+            bool m_is_receiving_stopped;
     };
 }
 

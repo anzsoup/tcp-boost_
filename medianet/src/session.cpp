@@ -10,26 +10,35 @@ namespace medianet
 {
     session::session(io_service *ios, tcp::socket *socket)
         : m_ios(ios),
-          m_peer(nullptr),
           m_socket(socket),
-          m_state(state::idle),
+          m_state(state::connected),
           m_mtx_sending(),
           m_cv_sending(),
+          m_flag_sending(false),
           m_sending_queue(),
-          m_is_sending_stopped(false)
+          m_is_sending_stopped(false),
+          m_is_receiving_stopped(false)
     {
         m_buffer = new char[packet::BUFFER_SIZE]();
 
+        bool sending_started = false;
+        bool receiving_started = false;
+
         // Start sending thread
-        m_sending_thread = boost::thread(boost::bind(&session::sending_job, this));
-        m_sending_thread.join();
+        m_sending_thread = boost::thread(boost::bind(&session::sending_job, this, boost::ref(sending_started)));
+        // Start receiving thread
+        m_receiving_thread = boost::thread(boost::bind(&session::receiving_job, this, boost::ref(receiving_started)));
+
+        // Block until all threads begin.
+        while (!sending_started || !receiving_started)
+            continue;
     }
 
     session::~session()
     {
+        close();
         delete m_socket;
         delete[] m_buffer;
-        delete m_peer;
     }
 
     tcp::socket*
@@ -44,40 +53,17 @@ namespace medianet
         return m_buffer;
     }
 
-    remote_peer*
-    session::get_peer()
-    {
-        return m_peer;
-    }
+    void
+    session::on_message(packet *msg) { }
 
     void
-    session::set_peer(remote_peer *pr)
-    {
-        m_peer = pr;
-    }
+    session::on_disconnected() { }
 
     void
-    session::on_connected()
+    session::handle_message()
     {
-        m_state = state::connected;
-    }
-
-    void
-    session::on_receive(size_t bytes_transferred)
-    {
-        // Assuming that stream is never segmented and arrives at one piece.
         auto msg = new packet(m_buffer);
         on_message(msg);
-    }
-
-    void
-    session::on_message(packet *msg)
-    {
-        if (m_peer)
-        {
-            m_peer->on_message(msg);
-        }
-        
         // todo : you want packet pooling?
         delete msg;
     }
@@ -96,27 +82,20 @@ namespace medianet
         else
         {
             m_state = state::closed;
-            on_closed();
-        }
-    }
+            
+            // Stop thread loops
+            m_is_sending_stopped = true;
+            m_is_receiving_stopped = true;
+            m_cv_sending.notify_all();
 
-    void
-    session::on_closed()
-    {
-        // Stop sending thread loop
-        m_is_sending_stopped = true;
-
-        if (m_socket)
-        {
-            m_socket->close();
+            if (m_socket)
+            {
+                m_socket->close();
+            }
+            
+            on_disconnected();
+            std::cout << "Session closed.\n";
         }
-        if (m_peer)
-        {
-            m_peer->on_removed();
-        }
-        
-        std::cout << "Session closed." << std::endl;
-        delete this;
     }
 
     void
@@ -124,17 +103,27 @@ namespace medianet
     {
         msg->record_size();
         if (!m_sending_queue.push(msg))
-            std::cout << "Failed to enqueue packet to sending queue." << std::endl;
+            std::cout << "Failed to enqueue packet to sending queue.\n";
         // awake sending queue
+        m_flag_sending = true;
         m_cv_sending.notify_all();
     }
 
     void
-    session::sending_job()
+    session::sending_job(bool &started)
     {
+        std::cout << "Start sending thread.\n";
+        started = true;
+
         while (true)
         {
-            m_cv_sending.wait(m_mtx_sending);
+            // We don't know send() or sending_job() that which one is called first.
+            // So we need to control condition variable with one more flag.
+            if (!m_flag_sending)
+            {
+                m_cv_sending.wait(m_mtx_sending);
+            }
+            
             while (!m_sending_queue.empty())
             {
                 packet *msg;
@@ -144,23 +133,77 @@ namespace medianet
 
                     // non-blocking synchronous send
                     // It's going to continue writing until all of the data has been transferred.
-                    boost::asio::write(*m_socket, buffer(msg->get_buffer(), msg->get_size()), error);
+                    // boost::asio::write(*m_socket, buffer(msg->get_buffer(), msg->get_size()), error);
+                    boost::asio::write(*m_socket, buffer(msg->get_buffer(), packet::BUFFER_SIZE), error);
                     // todo : you want pooling?
                     delete msg;
+                    std::cout << "sended\n";
 
                     if (error)
                     {
-                        std::cout << "Failed to send packet. : " << error.message() << std::endl;
+                        std::cout << "Failed to send packet. : " + error.message() + "\n";
                     }
                 }
                 else
                 {
-                    std::cout << "Failed to dequeue packet from sending queue." << std::endl;
+                    std::cout << "Failed to dequeue packet from sending queue.\n";
                 }
             }
 
             if (m_is_sending_stopped)
                 break;
+
+            m_flag_sending = false;
+        }
+
+        std::cout << "End sending thread.\n";
+    }
+
+    void
+    session::receiving_job(bool &started)
+    {
+        std::cout << "Start receiving thread.\n";
+        started = true;
+
+        while (true)
+        {
+            // Do receiving asynchronously to reduce cpu usage.
+            // socket::async_read_some(or socket::async_receive) may not receive all of the requested number of bytes.
+            // So async_read() is used to guarantee that packets are always received in one piece.
+            // And for the convenience, It's sending full size of buffer.
+            // If you want send and receive the exact size of buffer to save bandwidth,
+            // because there is no way to know the size of packet sent from remote peer,
+            // you should use async_read_some() and concatenate reached streams manually which requires difficult algorithm.
+            m_ios->reset();
+            boost::asio::async_read(*m_socket, buffer(m_buffer, packet::BUFFER_SIZE),
+                boost::bind(&session::handle_receive, this, placeholders::error, placeholders::bytes_transferred));
+            m_ios->run();
+
+            if (m_is_receiving_stopped)
+                break;
+        }
+
+        m_ios->reset();
+        std::cout << "End receiving thread.\n";
+    }
+
+    void
+    session::handle_receive(const boost::system::error_code &error, size_t bytes_transferred)
+    {
+        if (bytes_transferred > 0 && !error)
+        {
+            std::cout << "received\n";
+            // Assuming that stream is never segmented and arrives at one piece.
+            handle_message();
+        }
+        else
+        {
+            // It means that connection has been lost from remote peer.
+            if (bytes_transferred == 0 && m_state != state::closed)
+            {
+                std::cout << "Connection lost from remote peer.\n";
+                close();
+            }
         }
     }
 }

@@ -7,7 +7,6 @@
 #include "connector.h"
 #include "client_listener.h"
 #include "session.h"
-#include "callbacks.h"
 //#include "logic_message_entry.h"
 
 using namespace boost::asio;
@@ -38,29 +37,30 @@ namespace medianet
              * Start connection asynchronously.
              * @param host Host IP or domain.
              * @param port Port number.
-             * @param handler Result callback.
+             * @param on_connected_to Result callback.
              */
-            void connect(std::string host, short port, CBK_SESSION_HANDLER on_connected);
+            void connect(std::string host, short port, boost::function<void (tcp::socket*)> handler);
 
             /**
              * Start listening connection request.
              * Dynamic port is automatically assigned if port == 0.
              * @param port Listening port.
              * @param backlog The maximum length of the queue of pending connections.
+             * @param on_connected_from Result callback.
              * @return Assigned port.
              */
-            unsigned short start_listen(unsigned short port, int backlog, CBK_SESSION_HANDLER on_client_connected);
+            unsigned short start_listen(unsigned short port, int backlog, boost::function<void (tcp::socket*)> handler);
 
             void end_listen();
 
             /**
              * Connection to server completed with no error.
              */
-            void on_connected(tcp::socket *sv_socket);
+            void on_connected_to(tcp::socket *sv_socket);
             /**
              * Connection from client completed with no error.
              */
-            void on_client_connected(tcp::socket *cl_socket);
+            void on_connected_from(tcp::socket *cl_socket);
 
         private:
             void begin_receive(session *sess);
@@ -72,8 +72,6 @@ namespace medianet
             //logic_message_entry *m_logic_entry;
             client_listener *m_listener;
             connector *m_connector;
-            CBK_SESSION_HANDLER m_on_connected;
-            CBK_SESSION_HANDLER m_on_client_connected;
     };
 }
 

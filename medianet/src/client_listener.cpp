@@ -9,7 +9,9 @@ namespace medianet
 {
     client_listener::client_listener(io_service *ios)
         : m_ios(ios),
-          m_acceptor(nullptr)
+          m_acceptor(nullptr),
+          m_cv(),
+          m_is_stopped(false)
     {
         
     }
@@ -20,15 +22,15 @@ namespace medianet
     }
 
     unsigned short
-    client_listener::start(unsigned short port, int backlog, CBK_CONNECTION_HANDLER on_client_connected)
+    client_listener::start(unsigned short port, int backlog, boost::function<void (tcp::socket*)> handler)
     {
         if (m_acceptor)
         {
-            std::cerr << "Client listening already in progress." << std::endl;
+            std::cerr << "Client listening already in progress.\n";
             return port;
         }
 
-        m_on_client_connected = on_client_connected;
+        m_handler = handler;
         
         tcp::endpoint endpoint(tcp::v4(), port);
 
@@ -48,35 +50,46 @@ namespace medianet
         }
         
         unsigned short assigned_port = m_acceptor->local_endpoint().port();
-        std::cout << "Begin client listening. Port : " << assigned_port << std::endl;
-
-        begin_accept();
+        m_thread = boost::thread(boost::bind(&client_listener::listening_job, this, assigned_port));
         return assigned_port;
     }
 
     void
-    client_listener::begin_accept()
+    client_listener::listening_job(unsigned short port)
     {
-        auto cl_socket = new tcp::socket(*m_ios);
-        m_acceptor->async_accept(*cl_socket, 
-            boost::bind(&client_listener::handle_accept, this, cl_socket, placeholders::error));
-        m_ios->poll();
+        std::cout << "Start client listening thread. Port : " + std::to_string(port) + "\n";
+
+        while (true)
+        {
+            m_next_socket = new tcp::socket(*m_ios);
+            boost::system::error_code error;
+            // Do async to reduce cpu usage.
+            m_ios->reset();
+            m_acceptor->async_accept(*m_next_socket, 
+                boost::bind(&client_listener::handle_accept, this, m_next_socket, 
+                    boost::asio::placeholders::error));
+            m_ios->run();
+
+            if (m_is_stopped)
+                break;
+        }
+
+        m_ios->reset();
+        std::cout << "End client listening thread.\n";
     }
 
     void
     client_listener::handle_accept(tcp::socket *cl_socket, const boost::system::error_code &error)
     {
-        if (!error)
+        if (error)
         {
-            std::cout << "Client connection accepted." << std::endl;
-            m_on_client_connected(cl_socket);
+            std::cout << "An error occurs while accepting new client : " + error.message() + "\n";
         }
         else
         {
-            std::cout << "An error occurs while accepting new client : " << error.message() << std::endl;
+            std::cout << "Client connection accepted.\n";
+            m_handler(cl_socket);
         }
-        
-        begin_accept();
     }
 
     void
@@ -84,13 +97,19 @@ namespace medianet
     {
         if (m_acceptor)
         {
+            m_is_stopped = true;
             m_acceptor->cancel();
             m_acceptor->close();
 
             delete m_acceptor;
             m_acceptor = nullptr;
+        }
 
-            std::cout << "End client listening." << std::endl;
+        if (m_next_socket)
+        {
+            m_next_socket->cancel();
+            delete m_next_socket;
+            m_next_socket = nullptr;
         }
     }
 } // medianet

@@ -23,11 +23,12 @@ namespace medianet
     packet::packet(char *buffer)
         : m_position(0)
     {
-        char *temp = read_buffer(new char[HEADER_SIZE], HEADER_SIZE);
-        m_size = *((int*)temp);
         // deep copy
-        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], buffer, m_size);
-        m_protocol_id = pop_protocol_id();
+        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], buffer, BUFFER_SIZE);
+        char temp[HEADER_SIZE];
+        std::memcpy(temp, m_buffer, HEADER_SIZE);
+        m_size = *((int*)temp);
+        m_protocol_id = pop_int16();
         // HEADER - PROTOCOL_ID - DATA1 - DATA2 - ...
         // We are here! --------^
     }
@@ -37,7 +38,8 @@ namespace medianet
           m_size(orig.get_size()),
           m_protocol_id(orig.get_protocol_id())
     {
-        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], orig.get_buffer(), m_size);
+        // deep copy
+        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], orig.get_buffer(), BUFFER_SIZE);
     }
 
     packet::~packet()
@@ -75,12 +77,6 @@ namespace medianet
     packet::get_protocol_id() const
     {
         return m_protocol_id;
-    }
-
-    int16_t
-    packet::pop_protocol_id()
-    {
-        return pop_int16();
     }
 
     char
@@ -243,11 +239,11 @@ namespace medianet
         // overflow
         if (m_position + length > m_size)
         {
-            std::cout << "Packet reading warning : " << "You are trying reading buffer over the m_size." << std::endl;
+            std::cout << "Packet reading warning : You are trying reading buffer over the m_size.\n";
         }
         else if (m_position + length > BUFFER_SIZE)
         {
-            std::cout << "Packet reading failed : " << "Tryed reading buffer over the BUFFER_SIZE." << std::endl;
+            std::cout << "Packet reading failed : Tryed reading buffer over the BUFFER_SIZE.\n";
             return nullptr;
         }
 
@@ -262,7 +258,7 @@ namespace medianet
     {
         if (m_position + length > BUFFER_SIZE)
         {
-            std::cout << "Packet writing failed : " << "Tryed writing buffer over the BUFFER_SIZE." << std::endl;
+            std::cout << "Packet writing failed : Tryed writing buffer over the BUFFER_SIZE.\n";
             return;
         }
 
