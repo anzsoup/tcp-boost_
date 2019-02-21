@@ -7,7 +7,7 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    server::server(unsigned short port = 0)
+    server::server(unsigned short port)
         : m_ios()
     {
         tcp::endpoint endpoint(tcp::v4(), port);
@@ -36,14 +36,14 @@ namespace medianet
     void
     server::begin_accept()
     {
-        boost::shared_ptr<session> cl_session(create_new_session());
+        auto cl_session = create_new_session();
         m_acceptor->async_accept(cl_session->get_socket(), 
                 boost::bind(&server::handle_accept, this, cl_session, 
                     boost::asio::placeholders::error));
     }
 
     void
-    server::handle_accept(boost::shared_ptr<session> cl_session, const boost::system::error_code &error)
+    server::handle_accept(session *cl_session, const boost::system::error_code &error)
     {
         if (error)
         {

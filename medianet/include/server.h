@@ -4,7 +4,6 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
 #include "session.h"
 
 using namespace boost::asio;
@@ -24,7 +23,7 @@ namespace medianet
 
         private:
             void begin_accept();
-            void handle_accept(boost::shared_ptr<session> cl_session, const boost::system::error_code &error);
+            void handle_accept(session *cl_session, const boost::system::error_code &error);
 
         private:
             io_service m_ios;

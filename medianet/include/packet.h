@@ -13,8 +13,8 @@ namespace medianet
     class packet
     {
         public:
-            static const int BUFFER_SIZE = 1440;                // 1440 is maximum limit not to be segmented
-            static const int HEADER_SIZE = sizeof(int16_t);
+            static const int buffer_length = 1440;                // 1440 is maximum limit not to be segmented
+            static const int header_length = sizeof(int16_t);
             static packet* create(int16_t protocol_id);
             
         public:
@@ -30,8 +30,10 @@ namespace medianet
 
             // Getters and Setters
             char* get_buffer() const;
+            char* get_body() const;
             int get_position() const;
             int get_size() const;
+            int get_body_length() const;
             int16_t get_protocol_id() const;
 
             // Pop methods

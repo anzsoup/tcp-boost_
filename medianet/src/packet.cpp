@@ -13,20 +13,20 @@ namespace medianet
     }
 
     packet::packet()
-        : m_position(HEADER_SIZE),
+        : m_position(header_length),
           m_size(0),
           m_protocol_id(0)
     {
-        m_buffer = new char[BUFFER_SIZE]();
+        m_buffer = new char[buffer_length]();
     }
 
     packet::packet(char *buffer)
         : m_position(0)
     {
         // deep copy
-        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], buffer, BUFFER_SIZE);
-        char temp[HEADER_SIZE];
-        std::memcpy(temp, m_buffer, HEADER_SIZE);
+        m_buffer = (char*)std::memcpy(new char[buffer_length], buffer, buffer_length);
+        char temp[header_length];
+        std::memcpy(temp, m_buffer, header_length);
         m_size = *((int*)temp);
         m_protocol_id = pop_int16();
         // HEADER - PROTOCOL_ID - DATA1 - DATA2 - ...
@@ -39,7 +39,7 @@ namespace medianet
           m_protocol_id(orig.get_protocol_id())
     {
         // deep copy
-        m_buffer = (char*)std::memcpy(new char[BUFFER_SIZE], orig.get_buffer(), BUFFER_SIZE);
+        m_buffer = (char*)std::memcpy(new char[buffer_length], orig.get_buffer(), buffer_length);
     }
 
     packet::~packet()
@@ -50,15 +50,21 @@ namespace medianet
     void
     packet::record_size()
     {
-        int16_t body_size = (int16_t)(m_position - HEADER_SIZE);
+        int16_t body_size = (int16_t)(m_position - header_length);
         char *header = (char*)&body_size;
-        std::memcpy(m_buffer, header, HEADER_SIZE);
+        std::memcpy(m_buffer, header, header_length);
     }
 
     char*
     packet::get_buffer() const
     {
         return m_buffer;
+    }
+
+    char*
+    packet::get_body() const
+    {
+        return m_buffer + header_length;
     }
 
     int
@@ -71,6 +77,12 @@ namespace medianet
     packet::get_size() const
     {
         return m_size;
+    }
+
+    int
+    packet::get_body_length() const
+    {
+        return buffer_length - header_length;
     }
 
     int16_t
@@ -160,7 +172,7 @@ namespace medianet
     packet::set_porotocol_id(int16_t protocol_id)
     {
         m_protocol_id = protocol_id;
-        m_position = HEADER_SIZE;
+        m_position = header_length;
         push_int16(protocol_id);
     }
 
@@ -241,7 +253,7 @@ namespace medianet
         {
             std::cout << "Packet reading warning : You are trying reading buffer over the m_size.\n";
         }
-        else if (m_position + length > BUFFER_SIZE)
+        else if (m_position + length > buffer_length)
         {
             std::cout << "Packet reading failed : Tryed reading buffer over the BUFFER_SIZE.\n";
             return nullptr;
@@ -256,7 +268,7 @@ namespace medianet
     void
     packet::write_buffer(char *src, size_t length)
     {
-        if (m_position + length > BUFFER_SIZE)
+        if (m_position + length > buffer_length)
         {
             std::cout << "Packet writing failed : Tryed writing buffer over the BUFFER_SIZE.\n";
             return;
