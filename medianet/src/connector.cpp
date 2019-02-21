@@ -7,9 +7,10 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    connector::connector(io_service *ios)
+    connector::connector(boost::shared_ptr<io_service> ios)
         : m_ios(ios)
     {
+        
     }
 
     void

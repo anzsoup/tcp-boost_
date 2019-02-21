@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <string>
 #include "connector.h"
 #include "client_listener.h"
@@ -31,7 +33,7 @@ namespace medianet
 
             ~network_service();
 
-            io_service* get_io_service() const;
+            boost::shared_ptr<io_service> get_io_service() const;
 
             /**
              * Start connection asynchronously.
@@ -67,11 +69,12 @@ namespace medianet
             void handle_receive(session *sess, const boost::system::error_code& error, size_t bytes_transferred);
     
         private:
-            // io_service is noncopyable
-            io_service *m_ios;
+            // It is pointer because io_service is noncopyable.
+            boost::shared_ptr<io_service> m_ios;
             //logic_message_entry *m_logic_entry;
             client_listener *m_listener;
             connector *m_connector;
+            boost::thread m_thread;
     };
 }
 

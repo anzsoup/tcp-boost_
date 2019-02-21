@@ -11,7 +11,7 @@ namespace medianet
         : m_listener(nullptr),
           m_connector(nullptr)
     {
-        m_ios = new io_service();
+        m_ios = boost::shared_ptr<io_service>(new io_service());
 
         // if (use_logicthread)
         // {
@@ -64,7 +64,7 @@ namespace medianet
         } 
     }
 
-    io_service*
+    boost::shared_ptr<io_service>
     network_service::get_io_service() const
     {
         return m_ios;

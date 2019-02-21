@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 using namespace boost::asio;
@@ -18,14 +19,14 @@ namespace medianet
     class connector
     {
         public:
-            connector(io_service *ios);
+            connector(boost::shared_ptr<io_service> ios);
             void connect(std::string host, short port, boost::function<void (tcp::socket*)> handler);
 
         private:
             void connecting_job(std::string host, short port);
 
         private:
-            io_service *m_ios;
+            boost::shared_ptr<io_service> m_ios;
             tcp::socket *m_sv_socket;
             boost::thread m_thread;
             boost::function<void (tcp::socket*)> m_handler;

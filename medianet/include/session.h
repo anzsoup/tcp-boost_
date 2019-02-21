@@ -44,11 +44,12 @@ namespace medianet
             virtual void on_disconnected();
 
         public:
-            session(io_service *ios, tcp::socket *socket);
+            session(io_service &ios);
             ~session();
-            tcp::socket* get_socket() const;
+            tcp::socket get_socket() const;
             char* get_buffer() const;
             state get_state() const;
+            void start();
             void handle_message();
             void close();
 
@@ -59,14 +60,14 @@ namespace medianet
             void send(packet *msg);
 
         private:
-            void sending_job(bool &started);
-            void receiving_job(bool &started);
+            void sending_job();
+            void receiving_job();
             void begin_receive();
             void handle_receive(const boost::system::error_code &error, size_t bytes_transferred);
 
         private:
-            io_service *m_ios;
-            tcp::socket *m_socket;
+            io_service m_ios;
+            tcp::socket m_socket;
             state m_state;
             char *m_buffer;
             boost::thread m_sending_thread;

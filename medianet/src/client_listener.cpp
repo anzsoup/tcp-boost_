@@ -7,7 +7,7 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    client_listener::client_listener(io_service *ios)
+    client_listener::client_listener(boost::shared_ptr<io_service> ios)
         : m_ios(ios),
           m_acceptor(nullptr),
           m_cv(),

@@ -8,9 +8,9 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    session::session(io_service *ios, tcp::socket *socket)
+    session::session(io_service &ios)
         : m_ios(ios),
-          m_socket(socket),
+          m_socket(m_ios),
           m_state(state::connected),
           m_mtx_sending(),
           m_cv_sending(),
@@ -21,27 +21,19 @@ namespace medianet
     {
         m_buffer = new char[packet::BUFFER_SIZE]();
 
-        bool sending_started = false;
-        bool receiving_started = false;
-
         // Start sending thread
-        m_sending_thread = boost::thread(boost::bind(&session::sending_job, this, boost::ref(sending_started)));
+        m_sending_thread = boost::thread(boost::bind(&session::sending_job, this));
         // Start receiving thread
-        m_receiving_thread = boost::thread(boost::bind(&session::receiving_job, this, boost::ref(receiving_started)));
-
-        // Block until all threads begin.
-        while (!sending_started || !receiving_started)
-            continue;
+        m_receiving_thread = boost::thread(boost::bind(&session::receiving_job, this));
     }
 
     session::~session()
     {
         close();
-        delete m_socket;
         delete[] m_buffer;
     }
 
-    tcp::socket*
+    tcp::socket
     session::get_socket() const
     {
         return m_socket;
@@ -107,13 +99,28 @@ namespace medianet
         // awake sending queue
         m_flag_sending = true;
         m_cv_sending.notify_all();
+
+        bool send_in_progress = !m_sending_queue.empty();
+        msg->record_size();
+        m_sending_queue.push(msg);
+        if (!send_in_progress)
+        {
+            boost::asio::async_write(m_socket,
+                boost::asio::buffer(msg->get_buffer(), packet::BUFFER_SIZE),
+                    boost::bind(&session::handle_send, this, boost::asio::placeholders::error));
+        }
     }
 
     void
-    session::sending_job(bool &started)
+    session::begin_send()
+    {
+
+    }
+
+    void
+    session::sending_job()
     {
         std::cout << "Start sending thread.\n";
-        started = true;
 
         while (true)
         {
@@ -160,10 +167,9 @@ namespace medianet
     }
 
     void
-    session::receiving_job(bool &started)
+    session::receiving_job()
     {
         std::cout << "Start receiving thread.\n";
-        started = true;
 
         while (true)
         {
@@ -192,7 +198,6 @@ namespace medianet
     {
         if (bytes_transferred > 0 && !error)
         {
-            std::cout << "received\n";
             // Assuming that stream is never segmented and arrives at one piece.
             handle_message();
         }
