@@ -37,13 +37,13 @@ namespace medianet
     }
 
     void
-    session::on_message(packet msg) { }
-
-    void
     session::on_created() { }
 
     void
     session::on_closed() { }
+    
+    void
+    session::on_message(packet msg) { }
 
     void
     session::close()
@@ -72,13 +72,13 @@ namespace medianet
     session::begin_send(boost::shared_ptr<packet> msg)
     {
         bool send_in_progress = !m_sending_queue.empty();
-        msg->record_size();
+        msg->record_length();
         m_sending_queue.push_back(msg);
         if (!send_in_progress)
         {
             boost::asio::async_write(m_socket,
                 boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
-                    m_sending_queue.front()->get_size()),
+                    m_sending_queue.front()->get_length()),
                         boost::bind(&session::handle_send, this, 
                             boost::asio::placeholders::error));
         }
@@ -101,7 +101,7 @@ namespace medianet
         {
             boost::asio::async_write(m_socket,
                 boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
-                        m_sending_queue.front()->get_size()),
+                        m_sending_queue.front()->get_length()),
                             boost::bind(&session::handle_send, this,
                                 boost::asio::placeholders::error));
         }
@@ -117,12 +117,11 @@ namespace medianet
         boost::asio::async_read(m_socket,
             boost::asio::buffer(m_rcv_packet.get_buffer(), packet::header_length),
                 boost::bind(&session::handle_receive_header, this,
-                    boost::asio::placeholders::error,
-                        boost::asio::placeholders::bytes_transferred));
+                    boost::asio::placeholders::error));
     }
 
     void
-    session::handle_receive_header(const boost::system::error_code &error, size_t bytes_transferred)
+    session::handle_receive_header(const boost::system::error_code &error)
     {
         if (error == boost::asio::error::eof)
         {
@@ -134,16 +133,17 @@ namespace medianet
         }
         else
         {
+            std::cout<<"handle_receive_header\n";
+            m_rcv_packet.decode_length();
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_body(), m_rcv_packet.get_body_length()),
                     boost::bind(&session::handle_receive_body, this,
-                        boost::asio::placeholders::error,
-                            boost::asio::placeholders::bytes_transferred));
+                        boost::asio::placeholders::error));
         }
     }
 
     void
-    session::handle_receive_body(const boost::system::error_code &error, size_t bytes_transferred)
+    session::handle_receive_body(const boost::system::error_code &error)
     {
         if (error == boost::asio::error::eof)
         {
@@ -155,12 +155,12 @@ namespace medianet
         }
         else
         {
+            std::cout<<"handle_receive_body\n";
             on_message(m_rcv_packet);
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_buffer(), packet::header_length),
                     boost::bind(&session::handle_receive_header, this,
-                        boost::asio::placeholders::error,
-                            boost::asio::placeholders::bytes_transferred));
+                        boost::asio::placeholders::error));
         }
     }
 

@@ -14,7 +14,7 @@ namespace medianet
 
     packet::packet()
         : m_position(header_length),
-          m_size(0),
+          m_length(0),
           m_protocol_id(0)
     {
         m_buffer = new char[buffer_length]();
@@ -27,7 +27,7 @@ namespace medianet
         m_buffer = (char*)std::memcpy(new char[buffer_length], buffer, buffer_length);
         char temp[header_length];
         std::memcpy(temp, m_buffer, header_length);
-        m_size = *((int*)temp);
+        m_length = *((int*)temp);
         m_protocol_id = pop_int16();
         // HEADER - PROTOCOL_ID - DATA1 - DATA2 - ...
         // We are here! --------^
@@ -35,7 +35,7 @@ namespace medianet
 
     packet::packet(const packet &orig)
         : m_position(orig.get_position()),
-          m_size(orig.get_size()),
+          m_length(orig.get_length()),
           m_protocol_id(orig.get_protocol_id())
     {
         // deep copy
@@ -48,11 +48,19 @@ namespace medianet
     }
 
     void
-    packet::record_size()
+    packet::record_length()
     {
-        int16_t body_size = (int16_t)(m_position - header_length);
-        char *header = (char*)&body_size;
+        int16_t body_length = (int16_t)(m_position - header_length);
+        char *header = (char*)&body_length;
         std::memcpy(m_buffer, header, header_length);
+    }
+
+    void
+    packet::decode_length()
+    {
+        char data[header_length];
+        read_buffer(data, header_length);
+        m_length =  *((int16_t*)data);
     }
 
     char*
@@ -74,15 +82,15 @@ namespace medianet
     }
 
     int
-    packet::get_size() const
+    packet::get_length() const
     {
-        return m_size;
+        return m_length;
     }
 
     int
-    packet::get_body_length() const
+    packet::get_body_length()
     {
-        return buffer_length - header_length;
+        return m_length - header_length;
     }
 
     int16_t
@@ -249,13 +257,13 @@ namespace medianet
     packet::read_buffer(char *dest, size_t length)
     {
         // overflow
-        if (m_position + length > m_size)
+        if (m_position + length > m_length)
         {
-            std::cout << "Packet reading warning : You are trying reading buffer over the m_size.\n";
+            std::cout << "Packet reading warning : You are trying reading buffer over the m_length.\n";
         }
         else if (m_position + length > buffer_length)
         {
-            std::cout << "Packet reading failed : Tryed reading buffer over the BUFFER_SIZE.\n";
+            std::cout << "Packet reading failed : Tryed reading buffer over the buffer_length.\n";
             return nullptr;
         }
 
@@ -270,12 +278,12 @@ namespace medianet
     {
         if (m_position + length > buffer_length)
         {
-            std::cout << "Packet writing failed : Tryed writing buffer over the BUFFER_SIZE.\n";
+            std::cout << "Packet writing failed : Tryed writing buffer over the buffer_length.\n";
             return;
         }
 
         std::memcpy(m_buffer + m_position, src, length);
         m_position += length;
-        m_size += length;
+        m_length += length;
     }
 }

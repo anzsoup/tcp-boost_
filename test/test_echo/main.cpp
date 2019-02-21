@@ -1,58 +1,50 @@
 #include <iostream>
+#include <string>
 #include <boost/lexical_cast.hpp>
-#include <boost/bind.hpp>
-#include <vector>
 #include "medianet.h"
-#include "session_cl.h"
-#include "session_sv.h"
+#include "server_test.h"
+#include "client_test.h"
 
 using namespace std;
 using namespace medianet;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-#define PORT 0
-
-void on_connected(tcp::socket *sv_socket);
-void on_client_connected(tcp::socket *cl_socket);
-
-network_service *net;
-
 void run_server()
 {
-    net = new network_service();
-    net->start_listen(PORT, 10, on_client_connected);
+    server_test sv;
+    sv.start();
 
     cin.get();
 
     std::cout << "Server test over.\n";
 }
 
-void run_client(short port)
+void run_client(unsigned short port)
 {
-    net = new network_service();
-    net->connect("127.0.0.1", port, on_connected);
+    client_test cl;
+    cl.start("127.0.0.1", port);
 
-    cin.get();
+    int available_length = packet::buffer_length - packet::header_length;
+    char line[available_length];
+    while (std::cin.getline(line, available_length))
+    {
+        auto msg = packet::create(0);
+        msg->push_string(std::string(line));
+        cl.get_server_session()->send(msg);
+    }
 
     std::cout << "Client test over.\n";
 }
 
-void on_connected(tcp::socket *sv_socket)
-{
-    auto sv = new session_sv(net->get_io_service(), sv_socket);
-    auto msg = packet::create(0);
-    msg->push_int32(0);
-    sv->send(msg);
-}
-
-void on_client_connected(tcp::socket *cl_socket)
-{
-    new session_cl(net->get_io_service(), cl_socket);
-}
-
 int main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        std::cout << "Server : -s, Client : -c <port>\n";
+        return -1;
+    }
+
     string option(argv[1]);
     if (option == "-s")
     {
@@ -60,11 +52,19 @@ int main(int argc, char **argv)
     }
     else if (option == "-c")
     {
-        unsigned short port = PORT;
-        if (port == 0 && argc == 3)
+        if (argc != 3)
         {
-            port = boost::lexical_cast<unsigned short>(std::string(argv[2]));
+            std::cout << "Usage : -c <port>\n";
+            return -1;
         }
+
+        auto port = boost::lexical_cast<unsigned short>(std::string(argv[2]));
         run_client(port);
     }
+    else
+    {
+        std::cout << "Server : -s, Client : -c <port>\n";
+    }
+
+    return 0;
 }

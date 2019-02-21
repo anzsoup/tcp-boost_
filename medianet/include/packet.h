@@ -25,16 +25,20 @@ namespace medianet
             ~packet();
 
             /**
-             * Record final body size on the header.
+             * Record final stream length on the header.
              */
-            void record_size();
+            void record_length();
+            /**
+             * Decode current buffer and update m_length.
+             */
+            void decode_length();
 
             // Getters and Setters
             char* get_buffer() const;
             char* get_body() const;
             int get_position() const;
-            int get_size() const;
-            int get_body_length() const;
+            int get_length() const;
+            int get_body_length();
             int16_t get_protocol_id() const;
 
             // Pop methods
@@ -77,7 +81,7 @@ namespace medianet
         private:
             char *m_buffer;
             int m_position;
-            int m_size;
+            int m_length;
             int16_t m_protocol_id;
     };
 }

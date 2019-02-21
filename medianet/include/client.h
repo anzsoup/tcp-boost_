@@ -15,9 +15,14 @@ namespace medianet
     class client
     {
         public:
-            client(std::string host, unsigned short port);
-            session& get_server_session();
+            client();
+            ~client();
+            session* get_server_session();
             io_service& get_io_service();
+            void start(std::string host, unsigned short port);
+
+        protected:
+            virtual session* create_new_session(io_service &ios);
 
         private:
             void handle_connect(const boost::system::error_code &error);
@@ -25,7 +30,7 @@ namespace medianet
         private:
             io_service m_ios;
             boost::thread m_thread;
-            session m_sv_session;
+            session *m_sv_session;
     };
 }
 

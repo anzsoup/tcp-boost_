@@ -7,23 +7,15 @@ using namespace boost::asio::ip;
 class session_sv : public session
 {
     public:
-        session_sv(io_service *ios, tcp::socket *socket)
-            : session(ios, socket)
+        session_sv(io_service &ios)
+            : session(ios)
         {
             
         }
 
-        void on_message(packet *msg) override
+        void on_message(packet msg) override
         {
-            static int i = 1;
-
-            if (i > 10) return; 
-
-            auto echo = msg->pop_int32();
-            std::cout << "echo : " + std::to_string(echo) + "\n";
-
-            auto pkt = packet::create(0);
-            pkt->push_int32(i++);
-            send(pkt);
+            auto echo = msg.pop_string();
+            std::cout << echo + "\n";
         }
 };

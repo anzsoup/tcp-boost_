@@ -14,10 +14,11 @@ namespace medianet
     class server
     {
         public:
-            server(unsigned short port = 0);
+            server();
             ~server();
             unsigned short get_listening_port() const;
             io_service& get_io_service();
+            void start(unsigned short port = 0);
 
         protected:
             virtual session* create_new_session(io_service &ios);
@@ -29,7 +30,7 @@ namespace medianet
 
         private:
             io_service m_ios;
-            tcp::acceptor m_acceptor;
+            tcp::acceptor *m_acceptor;
             boost::thread m_thread;
             unsigned short m_listening_port;
     };

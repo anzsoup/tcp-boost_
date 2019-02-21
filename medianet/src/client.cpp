@@ -7,22 +7,39 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    client::client(std::string host, unsigned short port)
+    client::client()
         : m_ios(),
-          m_sv_session(m_ios)
+          m_sv_session(nullptr)
     {
-        std::cout << "Connect to \'" + host + ":" + std::to_string(port) + "\'.\n";
         
+    }
+
+    client::~client()
+    {
+        delete m_sv_session;
+    }
+
+    void
+    client::start(std::string host, unsigned short port)
+    {
+        std::cout << "Connect to \'" + host + ":" + std::to_string(port) + "\'.\n";   
         tcp::endpoint endpoint(address::from_string(host), port);
-        m_sv_session.get_socket().async_connect(endpoint,
+        m_sv_session = create_new_session(m_ios);
+        m_sv_session->get_socket().async_connect(endpoint,
             boost::bind(&client::handle_connect, this,
                 boost::asio::placeholders::error));
 
         // Start client thread.
         m_thread = boost::thread(boost::bind(&io_service::run, &m_ios));
     }
+
+    session*
+    client::create_new_session(io_service &ios)
+    {
+        return new session(ios);
+    }
     
-    session&
+    session*
     client::get_server_session()
     {
         return m_sv_session;
@@ -44,7 +61,7 @@ namespace medianet
         else
         {
             std::cout << "Connected.\n";
-            m_sv_session.start();
+            m_sv_session->start();
         }
     }
 }

@@ -7,14 +7,28 @@ using namespace boost::asio::ip;
 
 namespace medianet
 {
-    server::server(unsigned short port)
+    server::server()
         : m_ios(),
-          m_acceptor(m_ios, tcp::endpoint(tcp::v4(), port))
+          m_acceptor(nullptr)
     {
-        // Disable 'linger' behaviour to avoid problem when reusing the same port.
-        m_acceptor.set_option(tcp::acceptor::reuse_address(true));
         
-        m_listening_port = m_acceptor.local_endpoint().port();
+    }
+
+    server::~server()
+    {
+        m_ios.post(boost::bind(&server::do_close, this));
+    }
+
+    void
+    server::start(unsigned short port)
+    {
+        tcp::endpoint endpoint(tcp::v4(), port);
+        m_acceptor = new tcp::acceptor(m_ios, endpoint);
+
+        // Disable 'linger' behaviour to avoid problem when reusing the same port.
+        m_acceptor->set_option(tcp::acceptor::reuse_address(true));
+        
+        m_listening_port = m_acceptor->local_endpoint().port();
         
         // Start server thread.
         m_thread = boost::thread(boost::bind(&io_service::run, &m_ios));
@@ -23,11 +37,6 @@ namespace medianet
         m_ios.post(boost::bind(&server::begin_accept, this));
 
         std::cout << "Start server. Port : " + std::to_string(m_listening_port) +"\n";
-    }
-
-    server::~server()
-    {
-        m_ios.post(boost::bind(&server::do_close, this));
     }
 
     session*
@@ -52,7 +61,7 @@ namespace medianet
     server::begin_accept()
     {
         auto cl_session = create_new_session(m_ios);
-        m_acceptor.async_accept(cl_session->get_socket(), 
+        m_acceptor->async_accept(cl_session->get_socket(), 
                 boost::bind(&server::handle_accept, this, cl_session, 
                     boost::asio::placeholders::error));
     }
@@ -76,6 +85,7 @@ namespace medianet
     void
     server::do_close()
     {
-        m_acceptor.close();
+        m_acceptor->close();
+        delete m_acceptor;
     }
 }

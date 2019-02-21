@@ -65,8 +65,8 @@ namespace medianet
             void begin_send(boost::shared_ptr<packet> msg);
             void begin_receive();
             void handle_send(const boost::system::error_code &error);
-            void handle_receive_header(const boost::system::error_code& error, size_t bytes_transferred);
-            void handle_receive_body(const boost::system::error_code& error, size_t bytes_transferred);
+            void handle_receive_header(const boost::system::error_code& error);
+            void handle_receive_body(const boost::system::error_code& error);
             void connection_lost();
             void do_close();
 
