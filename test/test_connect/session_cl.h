@@ -9,14 +9,19 @@ class session_cl : public session
     public:
         static int COUNT;
 
-        session_cl(io_service *ios, tcp::socket *socket)
-            : session(ios, socket)
+        session_cl(io_service &ios)
+            : session(ios)
+        {
+            
+        }
+
+        void on_created() override
         {
             ++COUNT;
             std::cout << "Current : " + std::to_string(COUNT) + "\n";
         }
 
-        void on_disconnected() override
+        void on_closed() override
         {
             --COUNT;
             std::cout << "Current : " + std::to_string(COUNT) + "\n";

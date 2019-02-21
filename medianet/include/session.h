@@ -40,9 +40,12 @@ namespace medianet
 
             static const int SENDING_QUEUE_SIZE = 20000;
 
+        protected:
+            virtual void on_created();
+            virtual void on_closed();
+            
         public:
             virtual void on_message(packet msg);
-            virtual void on_closed();
 
         public:
             session(io_service &ios);
@@ -56,10 +59,10 @@ namespace medianet
              * Send packet.
              * Passed packet will be destroyed after the sending operation is done.
              */
-            void send(packet *msg);
+            void send(boost::shared_ptr<packet> msg);
 
         private:
-            void begin_send(packet *msg);
+            void begin_send(boost::shared_ptr<packet> msg);
             void begin_receive();
             void handle_send(const boost::system::error_code &error);
             void handle_receive_header(const boost::system::error_code& error, size_t bytes_transferred);
@@ -72,7 +75,7 @@ namespace medianet
             tcp::socket m_socket;
             state m_state;
             packet m_rcv_packet;
-            boost::container::deque<packet*> m_sending_queue;
+            boost::container::deque<boost::shared_ptr<packet>> m_sending_queue;
     };
 }
 

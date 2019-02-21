@@ -1,55 +1,39 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-#include <boost/bind.hpp>
-#include <vector>
 #include "medianet.h"
-#include "session_cl.h"
+#include "server_test.h"
 
 using namespace std;
 using namespace medianet;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-#define PORT 0
-
-void on_connected(tcp::socket *sv_socket);
-void on_client_connected(tcp::socket *cl_socket);
-
-network_service *net;
-session *sv;
-
 void run_server()
 {
-    net = new network_service();
-    net->start_listen(PORT, 10, on_client_connected);
+    server_test sv;
 
     cin.get();
 
     std::cout << "Server test over.\n";
 }
 
-void run_client(short port)
+void run_client(unsigned short port)
 {
-    net = new network_service();
-    net->connect("127.0.0.1", port, on_connected);
+    client cl("127.0.0.1", port);
 
     cin.get();
 
     std::cout << "Client test over.\n";
 }
 
-void on_connected(tcp::socket *sv_socket)
-{
-    new session(net->get_io_service(), sv_socket);
-}
-
-void on_client_connected(tcp::socket *cl_socket)
-{
-    new session_cl(net->get_io_service(), cl_socket);
-}
-
 int main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        std::cout << "Server : -s, Client : -c <port>\n";
+        return -1;
+    }
+
     string option(argv[1]);
     if (option == "-s")
     {
@@ -57,11 +41,19 @@ int main(int argc, char **argv)
     }
     else if (option == "-c")
     {
-        unsigned short port = PORT;
-        if (port == 0 && argc == 3)
+        if (argc != 3)
         {
-            port = boost::lexical_cast<unsigned short>(std::string(argv[2]));
+            std::cout << "Usage : -c <port>\n";
+            return -1;
         }
+
+        auto port = boost::lexical_cast<unsigned short>(std::string(argv[2]));
         run_client(port);
     }
+    else
+    {
+        std::cout << "Server : -s, Client : -c <port>\n";
+    }
+
+    return 0;
 }

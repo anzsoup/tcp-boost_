@@ -17,17 +17,19 @@ namespace medianet
             server(unsigned short port = 0);
             ~server();
             unsigned short get_listening_port() const;
+            io_service& get_io_service();
 
         protected:
-            virtual session* create_new_session();
+            virtual session* create_new_session(io_service &ios);
 
         private:
             void begin_accept();
             void handle_accept(session *cl_session, const boost::system::error_code &error);
+            void do_close();
 
         private:
             io_service m_ios;
-            tcp::acceptor *m_acceptor;
+            tcp::acceptor m_acceptor;
             boost::thread m_thread;
             unsigned short m_listening_port;
     };

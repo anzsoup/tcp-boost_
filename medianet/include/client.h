@@ -16,8 +16,8 @@ namespace medianet
     {
         public:
             client(std::string host, unsigned short port);
-            ~client();
             session& get_server_session();
+            io_service& get_io_service();
 
         private:
             void handle_connect(const boost::system::error_code &error);

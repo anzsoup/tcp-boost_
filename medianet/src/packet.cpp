@@ -4,10 +4,10 @@
 
 namespace medianet
 {
-    packet*
+    boost::shared_ptr<packet>
     packet::create(int16_t protocol_id)
     {
-        auto newone = new packet();
+        boost::shared_ptr<packet> newone(new packet());
         newone->set_porotocol_id(protocol_id);
         return newone;
     }

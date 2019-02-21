@@ -23,8 +23,7 @@ class session_sv : public session
             std::cout << "echo : " + std::to_string(echo) + "\n";
 
             auto pkt = packet::create(0);
-            pkt->push_int32(echo + 1);
+            pkt->push_int32(i++);
             send(pkt);
-            ++i;
         }
 };

@@ -1,7 +1,8 @@
 #ifndef __MEDIANET_H__
 #define __MEDIANET_H__
 
-#include "network_service.h"
+#include "server.h"
+#include "client.h"
 #include "packet.h"
 #include "session.h"
 

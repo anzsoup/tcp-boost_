@@ -27,6 +27,7 @@ namespace medianet
     session::start()
     {
         m_ios.post(boost::bind(&session::begin_receive, this));
+        on_created();
     }
 
     tcp::socket&
@@ -37,6 +38,9 @@ namespace medianet
 
     void
     session::on_message(packet msg) { }
+
+    void
+    session::on_created() { }
 
     void
     session::on_closed() { }
@@ -54,18 +58,18 @@ namespace medianet
         }
         else
         {
-            do_close();
+            m_ios.post(boost::bind(&session::do_close, this));
         }
     }
 
     void
-    session::send(packet *msg)
+    session::send(boost::shared_ptr<packet> msg)
     {
         m_ios.post(boost::bind(&session::begin_send, this, msg));
     }
 
     void
-    session::begin_send(packet *msg)
+    session::begin_send(boost::shared_ptr<packet> msg)
     {
         bool send_in_progress = !m_sending_queue.empty();
         msg->record_size();
@@ -120,11 +124,15 @@ namespace medianet
     void
     session::handle_receive_header(const boost::system::error_code &error, size_t bytes_transferred)
     {
-        if (error)
+        if (error == boost::asio::error::eof)
+        {
+            connection_lost();
+        }
+        else if (error)
         {
             std::cout << "Failed to receive header. : " + error.message() + "\n";
         }
-        else if (bytes_transferred > 0)
+        else
         {
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_body(), m_rcv_packet.get_body_length()),
@@ -132,21 +140,20 @@ namespace medianet
                         boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
-        else
-        {
-            // bytes_transferred == 0 means that connection has been lost from remote peer.
-            connection_lost();
-        }
     }
 
     void
     session::handle_receive_body(const boost::system::error_code &error, size_t bytes_transferred)
     {
-        if (error)
+        if (error == boost::asio::error::eof)
+        {
+            connection_lost();
+        }
+        else if (error)
         {
             std::cout << "Failed to receive body. : " + error.message() + "\n";
         }
-        else if (bytes_transferred > 0)
+        else
         {
             on_message(m_rcv_packet);
             boost::asio::async_read(m_socket,
@@ -154,11 +161,6 @@ namespace medianet
                     boost::bind(&session::handle_receive_header, this,
                         boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
-        }
-        else
-        {
-            // bytes_transferred == 0 means that connection has been lost from remote peer.
-            connection_lost();
         }
     }
 

@@ -1,4 +1,5 @@
 #include <boost/bind.hpp>
+#include <iostream>
 #include "client.h"
 
 using namespace boost::asio;
@@ -10,6 +11,8 @@ namespace medianet
         : m_ios(),
           m_sv_session(m_ios)
     {
+        std::cout << "Connect to \'" + host + ":" + std::to_string(port) + "\'.\n";
+        
         tcp::endpoint endpoint(address::from_string(host), port);
         m_sv_session.get_socket().async_connect(endpoint,
             boost::bind(&client::handle_connect, this,
@@ -25,6 +28,12 @@ namespace medianet
         return m_sv_session;
     }
 
+    io_service&
+    client::get_io_service()
+    {
+        return m_ios;
+    }
+
     void
     client::handle_connect(const boost::system::error_code &error)
     {
@@ -34,6 +43,7 @@ namespace medianet
         }
         else
         {
+            std::cout << "Connected.\n";
             m_sv_session.start();
         }
     }

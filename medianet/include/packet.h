@@ -1,6 +1,7 @@
 #ifndef __PACKET_H__
 #define __PACKET_H__
 
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 namespace medianet
@@ -15,7 +16,7 @@ namespace medianet
         public:
             static const int buffer_length = 1440;                // 1440 is maximum limit not to be segmented
             static const int header_length = sizeof(int16_t);
-            static packet* create(int16_t protocol_id);
+            static boost::shared_ptr<packet> create(int16_t protocol_id);
             
         public:
             packet();
