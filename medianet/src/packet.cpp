@@ -74,7 +74,7 @@ namespace medianet
     }
 
     int
-    packet::get_length() const
+    packet::get_total_length() const
     {
         return m_body_length + header_length;
     }
@@ -235,13 +235,13 @@ namespace medianet
     packet::read_buffer(char *dest, size_t length)
     {
         // overflow
-        if (m_position + length > get_length())
+        if (m_position + length > get_total_length())
         {
-            std::cout << "Packet reading warning : You are trying to read buffer over the m_length.\n";
+            std::cout << "Packet reading warning : You are trying to read buffer over the total length.\n";
         }
         else if (m_position + length > buffer_length)
         {
-            std::cout << "Packet reading failed : Tryed to read buffer over the buffer_length.\n";
+            std::cout << "Packet reading failed : Tryed to read buffer over the buffer length.\n";
             return nullptr;
         }
 
@@ -256,7 +256,7 @@ namespace medianet
     {
         if (m_position + length > buffer_length)
         {
-            std::cout << "Packet writing failed : Tryed to write buffer over the buffer_length.\n";
+            std::cout << "Packet writing failed : Tryed to write buffer over the buffer length.\n";
             return;
         }
 

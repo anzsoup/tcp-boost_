@@ -78,7 +78,7 @@ namespace medianet
         {
             boost::asio::async_write(m_socket,
                 boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
-                    m_sending_queue.front()->get_length()),
+                    m_sending_queue.front()->get_total_length()),
                         boost::bind(&session::handle_send, this, 
                             boost::asio::placeholders::error));
         }
@@ -99,7 +99,7 @@ namespace medianet
             {
                 boost::asio::async_write(m_socket,
                     boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
-                            m_sending_queue.front()->get_length()),
+                            m_sending_queue.front()->get_total_length()),
                                 boost::bind(&session::handle_send, this,
                                     boost::asio::placeholders::error));
             }
@@ -113,6 +113,7 @@ namespace medianet
     void
     session::begin_receive()
     {
+        // Read header first.
         boost::asio::async_read(m_socket,
             boost::asio::buffer(m_rcv_packet.get_buffer(), packet::header_length),
                 boost::bind(&session::handle_receive_header, this,
@@ -133,6 +134,7 @@ namespace medianet
         else
         {
             m_rcv_packet.decode_body_length();
+            // Next, read remaining stream of body.
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_body(), m_rcv_packet.get_body_length()),
                     boost::bind(&session::handle_receive_body, this,
@@ -153,6 +155,7 @@ namespace medianet
         }
         else
         {
+            // Continue to receive next packet.
             on_message(m_rcv_packet);
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_buffer(), packet::header_length),

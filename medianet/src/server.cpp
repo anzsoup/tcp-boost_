@@ -79,6 +79,7 @@ namespace medianet
             cl_session->start();
         }
 
+        // Continue to listen next client.
         begin_accept();
     }
 

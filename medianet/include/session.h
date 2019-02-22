@@ -13,11 +13,9 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     /** 
-     * A unit of socket communication.
-     * This is managed by the netservice and you don't need to care about it.
+     * Represents each connection.
+     * You can send message, handle received message, and observe socket status.
      * @author leejm
-     * @date 2019-02-13
-     * @version 0.1
      */
     class session
     {
@@ -30,7 +28,7 @@ namespace medianet
 
                 /** 
                  * Disconnection reserved.
-                 * If disconnect method is called while waiting for sending packets,
+                 * If @ref session::close() "close()" method is called while waiting for sending packets,
                  * it will be disconnected after all remaining packets are sent.
                  */
                 reserve_closing,
@@ -38,13 +36,20 @@ namespace medianet
                 closed
             };
 
-            static const int SENDING_QUEUE_SIZE = 20000;
-
         protected:
+            /**
+             * Be called right after the @ref session::start() "start()" is called.
+             */
             virtual void on_created();
+            /**
+             * Be called right after the socket is closed.
+             */
             virtual void on_closed();
             
         public:
+            /**
+             * Be called when new packet has been received.
+             */
             virtual void on_message(packet msg);
 
         public:
@@ -57,7 +62,9 @@ namespace medianet
 
             /**
              * Send packet.
-             * Passed packet will be destroyed after the sending operation is done.
+             * So many copy operations may occurs if packet is passed as stack object.
+             * And parameter packet can't be a raw pointer object since sending operation is done asynchronously.
+             * Therefor, it takes packet as form of shared_ptr.
              */
             void send(boost::shared_ptr<packet> msg);
 

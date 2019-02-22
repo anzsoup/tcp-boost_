@@ -4,20 +4,29 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
-#include "session.h"
+#include "network_service_interface.h"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
 namespace medianet
 {
-    class server
+    /**
+     * Can accept multiple connections and create one session per each connection.
+     * @author leejm
+     */
+    class server : public network_service_interface
     {
         public:
             server();
             ~server();
             unsigned short get_listening_port() const;
             io_service& get_io_service();
+
+            /**
+             * Start client listening and become host.
+             * @param port Assign listening port. If 0(default), than random port in the range of dynamic port domain will be assigned. 
+             */
             void start(unsigned short port = 0);
 
         protected:
