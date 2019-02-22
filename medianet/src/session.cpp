@@ -72,7 +72,7 @@ namespace medianet
     session::begin_send(boost::shared_ptr<packet> msg)
     {
         bool send_in_progress = !m_sending_queue.empty();
-        msg->record_length();
+        msg->record_body_length();
         m_sending_queue.push_back(msg);
         if (!send_in_progress)
         {
@@ -90,24 +90,23 @@ namespace medianet
         if (error)
         {
             std::cout << "Failed to send packet. : " + error.message() + "\n";
-            std::cout << "Trying re-send.\n";
+            do_close();
         }
         else
         {
             m_sending_queue.pop_front();
-        }
-        
-        if (!m_sending_queue.empty())
-        {
-            boost::asio::async_write(m_socket,
-                boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
-                        m_sending_queue.front()->get_length()),
-                            boost::bind(&session::handle_send, this,
-                                boost::asio::placeholders::error));
-        }
-        else if (m_state == state::reserve_closing)
-        {
-            do_close();
+            if (!m_sending_queue.empty())
+            {
+                boost::asio::async_write(m_socket,
+                    boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
+                            m_sending_queue.front()->get_length()),
+                                boost::bind(&session::handle_send, this,
+                                    boost::asio::placeholders::error));
+            }
+            else if (m_state == state::reserve_closing)
+            {
+                do_close();
+            }
         }
     }
 
@@ -133,8 +132,7 @@ namespace medianet
         }
         else
         {
-            std::cout<<"handle_receive_header\n";
-            m_rcv_packet.decode_length();
+            m_rcv_packet.decode_body_length();
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_body(), m_rcv_packet.get_body_length()),
                     boost::bind(&session::handle_receive_body, this,
@@ -155,7 +153,6 @@ namespace medianet
         }
         else
         {
-            std::cout<<"handle_receive_body\n";
             on_message(m_rcv_packet);
             boost::asio::async_read(m_socket,
                 boost::asio::buffer(m_rcv_packet.get_buffer(), packet::header_length),

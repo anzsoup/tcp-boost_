@@ -1,5 +1,6 @@
-#include "medianet.h"
+#include <iostream>
 #include <boost/shared_ptr.hpp>
+#include "medianet.h"
 
 using namespace medianet;
 using namespace boost::asio;
@@ -20,7 +21,7 @@ class session_cl : public session
         {
             auto str = msg.pop_string();
             std::cout << str + "\n";
-            boost::shared_ptr<packet> echo(new packet(msg));
+            boost::shared_ptr<packet> echo(new packet(msg.get_buffer()));
             send(echo);
         }
 

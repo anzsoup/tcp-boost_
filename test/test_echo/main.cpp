@@ -29,7 +29,7 @@ void run_client(unsigned short port)
     char line[available_length];
     while (std::cin.getline(line, available_length))
     {
-        auto msg = packet::create(0);
+        auto msg = packet::create();
         msg->push_string(std::string(line));
         cl.get_server_session()->send(msg);
     }

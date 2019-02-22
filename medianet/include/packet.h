@@ -16,7 +16,7 @@ namespace medianet
         public:
             static const int buffer_length = 1440;                // 1440 is maximum limit not to be segmented
             static const int header_length = sizeof(int16_t);
-            static boost::shared_ptr<packet> create(int16_t protocol_id);
+            static boost::shared_ptr<packet> create();
             
         public:
             packet();
@@ -27,19 +27,18 @@ namespace medianet
             /**
              * Record final stream length on the header.
              */
-            void record_length();
+            void record_body_length();
             /**
-             * Decode current buffer and update m_length.
+             * Read buffer and update m_length.
              */
-            void decode_length();
+            void decode_body_length();
 
             // Getters and Setters
             char* get_buffer() const;
             char* get_body() const;
             int get_position() const;
             int get_length() const;
-            int get_body_length();
-            int16_t get_protocol_id() const;
+            int get_body_length() const;
 
             // Pop methods
             char pop_byte();
@@ -54,7 +53,6 @@ namespace medianet
             
             // Push methods
             // I didn't overload methods because I wasn't sure which type is overloadable or not.
-            void set_porotocol_id(const int16_t protocol_id);
             void push_byte(char data);
             void push_bool(bool data);
             void push_int16(int16_t data);
@@ -81,8 +79,7 @@ namespace medianet
         private:
             char *m_buffer;
             int m_position;
-            int m_length;
-            int16_t m_protocol_id;
+            int m_body_length;
     };
 }
 

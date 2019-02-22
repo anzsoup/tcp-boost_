@@ -5,38 +5,31 @@
 namespace medianet
 {
     boost::shared_ptr<packet>
-    packet::create(int16_t protocol_id)
+    packet::create()
     {
         boost::shared_ptr<packet> newone(new packet());
-        newone->set_porotocol_id(protocol_id);
         return newone;
     }
 
     packet::packet()
         : m_position(header_length),
-          m_length(0),
-          m_protocol_id(0)
+          m_body_length(0)
     {
         m_buffer = new char[buffer_length]();
     }
 
     packet::packet(char *buffer)
-        : m_position(0)
+        : m_position(header_length),
+          m_body_length(0)
     {
         // deep copy
         m_buffer = (char*)std::memcpy(new char[buffer_length], buffer, buffer_length);
-        char temp[header_length];
-        std::memcpy(temp, m_buffer, header_length);
-        m_length = *((int*)temp);
-        m_protocol_id = pop_int16();
-        // HEADER - PROTOCOL_ID - DATA1 - DATA2 - ...
-        // We are here! --------^
+        decode_body_length();
     }
 
     packet::packet(const packet &orig)
         : m_position(orig.get_position()),
-          m_length(orig.get_length()),
-          m_protocol_id(orig.get_protocol_id())
+          m_body_length(orig.get_body_length())
     {
         // deep copy
         m_buffer = (char*)std::memcpy(new char[buffer_length], orig.get_buffer(), buffer_length);
@@ -48,19 +41,18 @@ namespace medianet
     }
 
     void
-    packet::record_length()
+    packet::record_body_length()
     {
-        int16_t body_length = (int16_t)(m_position - header_length);
-        char *header = (char*)&body_length;
+        char *header = (char*)&m_body_length;
         std::memcpy(m_buffer, header, header_length);
     }
 
     void
-    packet::decode_length()
+    packet::decode_body_length()
     {
-        char data[header_length];
-        read_buffer(data, header_length);
-        m_length =  *((int16_t*)data);
+        char header[header_length];
+        std::memcpy(header, m_buffer, header_length);
+        m_body_length =  *((int16_t*)header);
     }
 
     char*
@@ -84,26 +76,20 @@ namespace medianet
     int
     packet::get_length() const
     {
-        return m_length;
+        return m_body_length + header_length;
     }
 
     int
-    packet::get_body_length()
+    packet::get_body_length() const
     {
-        return m_length - header_length;
-    }
-
-    int16_t
-    packet::get_protocol_id() const
-    {
-        return m_protocol_id;
+        return m_body_length;
     }
 
     char
     packet::pop_byte()
     {
         size_t size = 1;
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *data;
     }
@@ -119,7 +105,7 @@ namespace medianet
     packet::pop_int16()
     {
         size_t size = sizeof(int16_t);
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *((int16_t*)data);
     }
@@ -128,7 +114,7 @@ namespace medianet
     packet::pop_int32()
     {
         size_t size = sizeof(int32_t);
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *((int32_t*)data);
     }
@@ -137,7 +123,7 @@ namespace medianet
     packet::pop_int64()
     {
         size_t size = sizeof(int64_t);
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *((int64_t*)data);
     }
@@ -146,7 +132,7 @@ namespace medianet
     packet::pop_single()
     {
         size_t size = sizeof(float);
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *((float*)data);
     }
@@ -155,7 +141,7 @@ namespace medianet
     packet::pop_double()
     {
         size_t size = sizeof(double);
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return *((double*)data);
     }
@@ -164,7 +150,7 @@ namespace medianet
     packet::pop_byte_array()
     {
         int16_t size = pop_int16();
-        char data[size];
+        char *data = new char[size];
         read_buffer(data, size);
         return data;
     }
@@ -174,14 +160,6 @@ namespace medianet
     {
         char *data = pop_byte_array();
         return std::string(data);
-    }
-
-    void
-    packet::set_porotocol_id(int16_t protocol_id)
-    {
-        m_protocol_id = protocol_id;
-        m_position = header_length;
-        push_int16(protocol_id);
     }
 
     void
@@ -257,13 +235,13 @@ namespace medianet
     packet::read_buffer(char *dest, size_t length)
     {
         // overflow
-        if (m_position + length > m_length)
+        if (m_position + length > get_length())
         {
-            std::cout << "Packet reading warning : You are trying reading buffer over the m_length.\n";
+            std::cout << "Packet reading warning : You are trying to read buffer over the m_length.\n";
         }
         else if (m_position + length > buffer_length)
         {
-            std::cout << "Packet reading failed : Tryed reading buffer over the buffer_length.\n";
+            std::cout << "Packet reading failed : Tryed to read buffer over the buffer_length.\n";
             return nullptr;
         }
 
@@ -278,12 +256,12 @@ namespace medianet
     {
         if (m_position + length > buffer_length)
         {
-            std::cout << "Packet writing failed : Tryed writing buffer over the buffer_length.\n";
+            std::cout << "Packet writing failed : Tryed to write buffer over the buffer_length.\n";
             return;
         }
 
         std::memcpy(m_buffer + m_position, src, length);
         m_position += length;
-        m_length += length;
+        m_body_length += length;
     }
 }
