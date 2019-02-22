@@ -1,0 +1,121 @@
+\hypertarget{classmedianet_1_1session}{}\section{medianet\+::session Class Reference}
+\label{classmedianet_1_1session}\index{medianet::session@{medianet::session}}
+
+
+Represents each connection.  
+
+
+
+
+{\ttfamily \#include $<$session.\+h$>$}
+
+
+
+Collaboration diagram for medianet\+::session\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=176pt]{classmedianet_1_1session__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1e}{state}} \{ {\bfseries idle}, 
+{\bfseries connected}, 
+\mbox{\hyperlink{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1ead5fee2f76eb10b1d5fe7951bf0b3c216}{reserve\+\_\+closing}}, 
+{\bfseries closed}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \mbox{\hyperlink{classmedianet_1_1session_a89428a6c9e2420377a558c60052108d2}{on\+\_\+message}} (\mbox{\hyperlink{classmedianet_1_1packet}{packet}} msg)
+\item 
+\mbox{\Hypertarget{classmedianet_1_1session_a52b53e52a2819ec994160f21c5645e7e}\label{classmedianet_1_1session_a52b53e52a2819ec994160f21c5645e7e}} 
+{\bfseries session} (io\+\_\+service \&ios)
+\item 
+\mbox{\Hypertarget{classmedianet_1_1session_ab6f2854c93b3ded2e4d4c49424a85986}\label{classmedianet_1_1session_ab6f2854c93b3ded2e4d4c49424a85986}} 
+tcp\+::socket \& {\bfseries get\+\_\+socket} ()
+\item 
+\mbox{\Hypertarget{classmedianet_1_1session_a0d61472d8b8a47721f0e33ae800b4775}\label{classmedianet_1_1session_a0d61472d8b8a47721f0e33ae800b4775}} 
+\mbox{\hyperlink{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1e}{state}} {\bfseries get\+\_\+state} () const
+\item 
+\mbox{\Hypertarget{classmedianet_1_1session_a1cf59767c071f6f583854cc9f0a26f28}\label{classmedianet_1_1session_a1cf59767c071f6f583854cc9f0a26f28}} 
+void {\bfseries start} ()
+\item 
+\mbox{\Hypertarget{classmedianet_1_1session_a355bb5624d3c3954e53c2b33bc46c13b}\label{classmedianet_1_1session_a355bb5624d3c3954e53c2b33bc46c13b}} 
+void {\bfseries close} ()
+\item 
+void \mbox{\hyperlink{classmedianet_1_1session_a06d3f7ce4d2dca1c9948ff9ae450f25b}{send}} (boost\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classmedianet_1_1packet}{packet}} $>$ msg)
+\begin{DoxyCompactList}\small\item\em Send packet. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \mbox{\hyperlink{classmedianet_1_1session_ae51c3ba72b54e8c894ab87d3521cb8dd}{on\+\_\+created}} ()
+\item 
+virtual void \mbox{\hyperlink{classmedianet_1_1session_aeac3444d78278559bd2f0b4ac2abf121}{on\+\_\+closed}} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Represents each connection. 
+
+You can send message, handle received message, and observe socket status.
+
+\begin{DoxyAuthor}{Author}
+leejm 
+\end{DoxyAuthor}
+
+
+\subsection{Member Enumeration Documentation}
+\mbox{\Hypertarget{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1e}\label{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1e}} 
+\index{medianet::session@{medianet::session}!state@{state}}
+\index{state@{state}!medianet::session@{medianet::session}}
+\subsubsection{\texorpdfstring{state}{state}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1e}{medianet\+::session\+::state}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{reserve\_closing@{reserve\_closing}!medianet::session@{medianet::session}}\index{medianet::session@{medianet::session}!reserve\_closing@{reserve\_closing}}}\mbox{\Hypertarget{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1ead5fee2f76eb10b1d5fe7951bf0b3c216}\label{classmedianet_1_1session_a8ebb6f84fba5564ef87d553c6f823f1ead5fee2f76eb10b1d5fe7951bf0b3c216}} 
+reserve\+\_\+closing&Disconnection reserved. If close() method is called while waiting for sending packets, it will be disconnected after all remaining packets are sent. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classmedianet_1_1session_aeac3444d78278559bd2f0b4ac2abf121}\label{classmedianet_1_1session_aeac3444d78278559bd2f0b4ac2abf121}} 
+\index{medianet::session@{medianet::session}!on\_closed@{on\_closed}}
+\index{on\_closed@{on\_closed}!medianet::session@{medianet::session}}
+\subsubsection{\texorpdfstring{on\_closed()}{on\_closed()}}
+{\footnotesize\ttfamily void medianet\+::session\+::on\+\_\+closed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+Be called right after the socket is closed. \mbox{\Hypertarget{classmedianet_1_1session_ae51c3ba72b54e8c894ab87d3521cb8dd}\label{classmedianet_1_1session_ae51c3ba72b54e8c894ab87d3521cb8dd}} 
+\index{medianet::session@{medianet::session}!on\_created@{on\_created}}
+\index{on\_created@{on\_created}!medianet::session@{medianet::session}}
+\subsubsection{\texorpdfstring{on\_created()}{on\_created()}}
+{\footnotesize\ttfamily void medianet\+::session\+::on\+\_\+created (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+Be called right after the start() is called. \mbox{\Hypertarget{classmedianet_1_1session_a89428a6c9e2420377a558c60052108d2}\label{classmedianet_1_1session_a89428a6c9e2420377a558c60052108d2}} 
+\index{medianet::session@{medianet::session}!on\_message@{on\_message}}
+\index{on\_message@{on\_message}!medianet::session@{medianet::session}}
+\subsubsection{\texorpdfstring{on\_message()}{on\_message()}}
+{\footnotesize\ttfamily void medianet\+::session\+::on\+\_\+message (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classmedianet_1_1packet}{packet}}}]{msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Be called when new packet has been received. \mbox{\Hypertarget{classmedianet_1_1session_a06d3f7ce4d2dca1c9948ff9ae450f25b}\label{classmedianet_1_1session_a06d3f7ce4d2dca1c9948ff9ae450f25b}} 
+\index{medianet::session@{medianet::session}!send@{send}}
+\index{send@{send}!medianet::session@{medianet::session}}
+\subsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily void medianet\+::session\+::send (\begin{DoxyParamCaption}\item[{boost\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classmedianet_1_1packet}{packet}} $>$}]{msg }\end{DoxyParamCaption})}
+
+
+
+Send packet. 
+
+So many copy operations may occurs if packet is passed as stack object. And parameter packet can\textquotesingle{}t be a raw pointer object since sending operation is done asynchronously. Therefor, it takes packet as form of shared\+\_\+ptr. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/anz/workspace/lab/medianet/medianet/include/session.\+h\item 
+/home/anz/workspace/lab/medianet/medianet/src/session.\+cpp\end{DoxyCompactItemize}

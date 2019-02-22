@@ -97,6 +97,7 @@ namespace medianet
             m_sending_queue.pop_front();
             if (!m_sending_queue.empty())
             {
+                // Continue to send next packet if exists.
                 boost::asio::async_write(m_socket,
                     boost::asio::buffer(m_sending_queue.front()->get_buffer(), 
                             m_sending_queue.front()->get_total_length()),

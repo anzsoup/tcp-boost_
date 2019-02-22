@@ -13,8 +13,12 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     /** 
+     * @brief
      * Represents each connection.
+     * 
+     * @details
      * You can send message, handle received message, and observe socket status.
+     * 
      * @author leejm
      */
     class session
@@ -27,8 +31,11 @@ namespace medianet
                 connected,
 
                 /** 
+                 * @brief
                  * Disconnection reserved.
-                 * If @ref session::close() "close()" method is called while waiting for sending packets,
+                 * 
+                 * @details
+                 * If close() method is called while waiting for sending packets,
                  * it will be disconnected after all remaining packets are sent.
                  */
                 reserve_closing,
@@ -38,7 +45,7 @@ namespace medianet
 
         protected:
             /**
-             * Be called right after the @ref session::start() "start()" is called.
+             * Be called right after the start() is called.
              */
             virtual void on_created();
             /**
@@ -61,7 +68,10 @@ namespace medianet
             void close();
 
             /**
+             * @brief
              * Send packet.
+             * 
+             * @details
              * So many copy operations may occurs if packet is passed as stack object.
              * And parameter packet can't be a raw pointer object since sending operation is done asynchronously.
              * Therefor, it takes packet as form of shared_ptr.

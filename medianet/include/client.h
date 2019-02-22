@@ -13,7 +13,9 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     /**
+     * @brief
      * Can connect to only one host.
+     * 
      * @author leejm
      */
     class client : public network_service_interface
@@ -25,7 +27,9 @@ namespace medianet
             io_service& get_io_service();
 
             /**
+             * @brief
              * Connect to given host and become client.
+             * 
              * @param host IP or domain name.
              * @param port Port.
              */

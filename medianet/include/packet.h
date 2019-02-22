@@ -7,20 +7,27 @@
 namespace medianet
 {
     /**
+     * @brief
      * A class for reading and writing byte stream.
+     * 
+     * @details
      * It doesn't care whether the structure is little endian or big endian.
+     * 
      * @author leejm
      */
     class packet
     {
         public:
-            /// 1440 is maximum limit not to be segmented.
+            /// 1440 is the maximum limit not to be segmented.
             static const int buffer_length = 1440;
             /// The header contains total body length.
             static const int header_length = sizeof(int16_t);
             
             /**
+             * @brief
              * Create new empty packet instance and wrap it in shared_ptr.
+             * 
+             * @details
              * It is recommended to use this static method rather than constructors.
              */
             static boost::shared_ptr<packet> create();
@@ -78,13 +85,19 @@ namespace medianet
 
         private:
             /**
+             * @brief
              * Copy m_buffer into dest array by the given length starts from the position that m_position indicates.
+             * 
+             * @details
              * Modify this method if you need to handle endian structure.
              */
             char* read_buffer(char *dest, size_t length);
 
             /**
+             * @brief
              * Copy dest array into m_buffer by the given length starts from the position that m_position indicates.
+             * 
+             * @details
              * Modify this method if you need to handle endian structure.
              */
             void write_buffer(char *src, size_t length);

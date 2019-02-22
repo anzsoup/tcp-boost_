@@ -9,7 +9,9 @@ using namespace boost::asio;
 namespace medianet
 {
     /**
+     * @brief
      * Network services are object that manages boost::asio::io_service and network session.
+     * 
      * @author leejm
      */
     class network_service_interface

@@ -1,0 +1,85 @@
+\hypertarget{classmedianet_1_1client}{}\section{medianet\+::client Class Reference}
+\label{classmedianet_1_1client}\index{medianet::client@{medianet::client}}
+
+
+Can connect to only one host.  
+
+
+
+
+{\ttfamily \#include $<$client.\+h$>$}
+
+
+
+Inheritance diagram for medianet\+::client\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=214pt]{classmedianet_1_1client__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for medianet\+::client\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=214pt]{classmedianet_1_1client__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmedianet_1_1client_a5fb534476e728af64b6665e1fc491658}\label{classmedianet_1_1client_a5fb534476e728af64b6665e1fc491658}} 
+\mbox{\hyperlink{classmedianet_1_1session}{session}} $\ast$ {\bfseries get\+\_\+server\+\_\+session} ()
+\item 
+\mbox{\Hypertarget{classmedianet_1_1client_a526b5cce5710dcfb2f63f29a5aaec945}\label{classmedianet_1_1client_a526b5cce5710dcfb2f63f29a5aaec945}} 
+io\+\_\+service \& {\bfseries get\+\_\+io\+\_\+service} ()
+\item 
+void \mbox{\hyperlink{classmedianet_1_1client_a5700e0893f2771ab6ed5a2e119db35e7}{start}} (std\+::string host, unsigned short port)
+\begin{DoxyCompactList}\small\item\em Connect to given host and become client. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classmedianet_1_1client_a939f2c8b49eddfc7f3fa81a6a91daf60}\label{classmedianet_1_1client_a939f2c8b49eddfc7f3fa81a6a91daf60}} 
+virtual \mbox{\hyperlink{classmedianet_1_1session}{session}} $\ast$ {\bfseries create\+\_\+new\+\_\+session} (io\+\_\+service \&ios)
+\item 
+\mbox{\Hypertarget{classmedianet_1_1network__service__interface_a951d00b17cf7021c2f66d29495b46880}\label{classmedianet_1_1network__service__interface_a951d00b17cf7021c2f66d29495b46880}} 
+virtual \mbox{\hyperlink{classmedianet_1_1session}{session}} $\ast$ {\bfseries create\+\_\+new\+\_\+session} ()=0
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Can connect to only one host. 
+
+\begin{DoxyAuthor}{Author}
+leejm 
+\end{DoxyAuthor}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classmedianet_1_1client_a5700e0893f2771ab6ed5a2e119db35e7}\label{classmedianet_1_1client_a5700e0893f2771ab6ed5a2e119db35e7}} 
+\index{medianet::client@{medianet::client}!start@{start}}
+\index{start@{start}!medianet::client@{medianet::client}}
+\subsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily void medianet\+::client\+::start (\begin{DoxyParamCaption}\item[{std\+::string}]{host,  }\item[{unsigned short}]{port }\end{DoxyParamCaption})}
+
+
+
+Connect to given host and become client. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em host} & IP or domain name. \\
+\hline
+{\em port} & Port. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/anz/workspace/lab/medianet/medianet/include/client.\+h\item 
+/home/anz/workspace/lab/medianet/medianet/src/client.\+cpp\end{DoxyCompactItemize}

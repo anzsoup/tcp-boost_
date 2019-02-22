@@ -12,7 +12,9 @@ using namespace boost::asio::ip;
 namespace medianet
 {
     /**
+     * @brief
      * Can accept multiple connections and create one session per each connection.
+     * 
      * @author leejm
      */
     class server : public network_service_interface
@@ -24,8 +26,11 @@ namespace medianet
             io_service& get_io_service();
 
             /**
+             * @brief
              * Start client listening and become host.
-             * @param port Assign listening port. If 0(default), than random port in the range of dynamic port domain will be assigned. 
+             * 
+             * @param port
+             * Assign listening port. If 0(default), than random port in the range of dynamic port domain will be assigned. 
              */
             void start(unsigned short port = 0);
 
