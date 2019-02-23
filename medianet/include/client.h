@@ -36,7 +36,7 @@ namespace medianet
             void start(std::string host, unsigned short port);
 
         protected:
-            virtual session* create_new_session(io_service &ios);
+            session* create_new_session(io_service &ios) override;
 
         private:
             void handle_connect(const boost::system::error_code &error);

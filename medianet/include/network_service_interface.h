@@ -20,7 +20,7 @@ namespace medianet
             virtual io_service& get_io_service() = 0;
         
         protected:
-            virtual session* create_new_session() = 0;
+            virtual session* create_new_session(io_service &ios) = 0;
     };
 }
 

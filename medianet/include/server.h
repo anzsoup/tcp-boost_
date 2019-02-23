@@ -35,7 +35,7 @@ namespace medianet
             void start(unsigned short port = 0);
 
         protected:
-            virtual session* create_new_session(io_service &ios);
+            session* create_new_session(io_service &ios) override;
 
         private:
             void begin_accept();
