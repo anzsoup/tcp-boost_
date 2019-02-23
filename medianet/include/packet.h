@@ -80,7 +80,7 @@ namespace medianet
             void push_int64(int64_t data);
             void push_single(float data);
             void push_double(double data);
-            void push_byte_array(char *data, int16_t length);
+            void push_byte_array(char *data, size_t length);
             void push_string(std::string data);
 
         private:

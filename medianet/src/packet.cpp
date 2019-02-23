@@ -149,7 +149,7 @@ namespace medianet
     char*
     packet::pop_byte_array()
     {
-        int16_t size = pop_int16();
+        size_t size = pop_int64();
         char *data = new char[size];
         read_buffer(data, size);
         return data;
@@ -217,9 +217,9 @@ namespace medianet
     }
 
     void
-    packet::push_byte_array(char *data, int16_t length)
+    packet::push_byte_array(char *data, size_t length)
     {
-        push_int16(length);
+        push_int64(length);
         write_buffer(data, length);
     }
 
