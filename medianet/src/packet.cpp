@@ -4,6 +4,8 @@
 
 namespace medianet
 {
+    int packet::_buffer_length = packet::default_buffer_length;
+
     boost::shared_ptr<packet>
     packet::create()
     {
@@ -11,11 +13,23 @@ namespace medianet
         return newone;
     }
 
+    int
+    packet::get_buffer_length()
+    {
+        return _buffer_length;
+    }
+
+    void
+    packet::set_buffer_length(int value)
+    {
+        _buffer_length = value;
+    }
+
     packet::packet()
         : m_position(header_length),
           m_body_length(0)
     {
-        m_buffer = new char[buffer_length]();
+        m_buffer = new char[_buffer_length]();
     }
 
     packet::packet(char *buffer)
@@ -23,7 +37,7 @@ namespace medianet
           m_body_length(0)
     {
         // deep copy
-        m_buffer = (char*)std::memcpy(new char[buffer_length], buffer, buffer_length);
+        m_buffer = (char*)std::memcpy(new char[_buffer_length], buffer, _buffer_length);
         decode_body_length();
     }
 
@@ -32,7 +46,7 @@ namespace medianet
           m_body_length(orig.get_body_length())
     {
         // deep copy
-        m_buffer = (char*)std::memcpy(new char[buffer_length], orig.get_buffer(), buffer_length);
+        m_buffer = (char*)std::memcpy(new char[_buffer_length], orig.get_buffer(), _buffer_length);
     }
 
     packet::~packet()
@@ -239,7 +253,7 @@ namespace medianet
         {
             std::cout << "Packet reading warning : You are trying to read buffer over the total length.\n";
         }
-        else if (m_position + length > buffer_length)
+        else if (m_position + length > _buffer_length)
         {
             std::cout << "Packet reading failed : Tryed to read buffer over the buffer length.\n";
             return nullptr;
@@ -254,7 +268,7 @@ namespace medianet
     void
     packet::write_buffer(char *src, size_t length)
     {
-        if (m_position + length > buffer_length)
+        if (m_position + length > _buffer_length)
         {
             std::cout << "Packet writing failed : Tryed to write buffer over the buffer length.\n";
             return;

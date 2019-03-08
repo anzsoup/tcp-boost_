@@ -25,7 +25,7 @@ void run_client(unsigned short port)
     client_test cl;
     cl.start("127.0.0.1", port);
 
-    int available_length = packet::buffer_length - packet::header_length;
+    int available_length = packet::get_buffer_length() - packet::header_length;
     char line[available_length];
     while (std::cin.getline(line, available_length))
     {

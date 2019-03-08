@@ -17,9 +17,12 @@ namespace medianet
      */
     class packet
     {
+        private:
+            static int _buffer_length;
+
         public:
             /// 1440 is the maximum limit not to be segmented.
-            static const int buffer_length = 1440;
+            static const int default_buffer_length = 1440;
             /// The header contains total body length.
             static const int header_length = sizeof(int16_t);
             
@@ -31,6 +34,8 @@ namespace medianet
              * It is recommended to use this static method rather than constructors.
              */
             static boost::shared_ptr<packet> create();
+            static int get_buffer_length();
+            static void set_buffer_length(int value);
             
         public:
             packet();
