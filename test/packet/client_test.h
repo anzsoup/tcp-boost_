@@ -1,8 +1,8 @@
 #include <string>
-#include "medianet.h"
+#include "tcp_boost.h"
 #include "session_sv.h"
 
-using namespace medianet;
+using namespace tcp_boost;
 using namespace boost::asio;
 
 class client_test : public client

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include "medianet.h"
+#include "tcp_boost.h"
 
-using namespace medianet;
+using namespace tcp_boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 

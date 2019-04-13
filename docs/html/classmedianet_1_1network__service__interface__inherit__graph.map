@@ -1,5 +1,0 @@
-<map id="medianet::network_service_interface" name="medianet::network_service_interface">
-<area shape="rect" id="node1" title="Network services are object that manages boost::asio::io_service and network session." alt="" coords="88,5,267,112"/>
-<area shape="rect" id="node2" href="$classmedianet_1_1client.html" title="Can connect to only one host." alt="" coords="5,160,165,311"/>
-<area shape="rect" id="node3" href="$classmedianet_1_1server.html" title="Can accept multiple connections and create one session per each connection." alt="" coords="189,160,349,311"/>
-</map>

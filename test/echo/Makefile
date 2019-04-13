@@ -3,12 +3,12 @@ CXX		  := g++
 CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb
 
 BIN		:= bin
-SRC		:= ../../medianet/src
-INCLUDE	:= ../../medianet/include
-LIB		:= ../../medianet/lib
+SRC		:= ../../tcp_boost/src
+INCLUDE	:= ../../tcp_boost/include
+LIB		:= ../../tcp_boost/lib
 
 LIBRARIES	:= -lboost_system -lboost_thread
-EXECUTABLE	:= medianet_test
+EXECUTABLE	:= tcp_boost_test
 
 
 all: $(BIN)/$(EXECUTABLE)
