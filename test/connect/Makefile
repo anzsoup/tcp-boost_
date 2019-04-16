@@ -3,9 +3,9 @@ CXX		  := g++
 CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb
 
 BIN		:= bin
-SRC		:= ../../tcp_boost/src
-INCLUDE	:= ../../tcp_boost/include
-LIB		:= ../../tcp_boost/lib
+SRC		:= ../../tcp-boost/src
+INCLUDE	:= ../../tcp-boost/include
+LIB		:= ../../tcp-boost/lib
 
 LIBRARIES	:= -lboost_system -lboost_thread
 EXECUTABLE	:= tcp_boost_test
