@@ -1,6 +1,6 @@
 DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 CXX		  := g++
-CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb
+CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb -pthread
 
 BIN		:= bin
 SRC		:= ../../tcp-boost/src
